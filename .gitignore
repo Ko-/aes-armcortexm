@@ -1,0 +1,17 @@
+# Object files and binaries
+*.d
+*.o
+*.bin
+*.elf
+
+# LaTeX
+*.aux
+*.log
+*.out
+*.bbl
+*.blg
+*.synctex
+*.synctex.gz
+*.fdb_latexmk
+*.dvi
+*.fls
