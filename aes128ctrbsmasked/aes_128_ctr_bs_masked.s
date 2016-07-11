@@ -1268,13 +1268,13 @@ AES_128_encrypt_ctr:
 encrypt_blocks: //expect p in r0, RNG_SR in r12, AES_bsconst in r14
 
     //generate 328 random words and store on stack
-    mov r7, sp
+    mov.w r7, #1
     mov r4, #328
     add r5, r12, #4 //RNG_DR
 .align 2
 generate_random:
     ldr r6, [r12]
-    subs r6, #1
+    tst r6, r7
     bne generate_random //wait until RNG_SR == RNG_SR_DRDY
     ldr r6, [r5]
     push {r6}
