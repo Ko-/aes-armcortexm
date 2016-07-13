@@ -10,7 +10,7 @@
 #   Disclaimer: hacky on purpose, read carefully.                 #
 #   Pipelining and alignment need to be done manually.            #
 #                                                                 #
-#                                       By Anonymous - May 2016   #
+#                                    By Ko Stoffelen - May 2016   #
 #                                                                 #
 ###################################################################
 
@@ -157,6 +157,7 @@ def stacktoclear(sboxslice, stack):
   return (len(stack), True)
 
 def recomputepossible(sbox, registers, i, v):
+  #determine whether v could actually have been recomputed without loading from stack
   for j in range(i-1,-1,-1):
     if sbox[j][0] == v:
       return all(x in registers.values() for x in sbox[j][1])
@@ -228,8 +229,8 @@ if __name__ == "__main__":
   else:
     filename = sys.argv[1]
 
-  #read sbox_text als a list of tuples
-  #assumes uniqueness of variables names, e.g., SSA
+  #read sbox_text als a list of tuples of lhs variable and list of rhs variables
+  #assumes uniqueness of variables names, e.g., static single alignment (SSA) form
   #assumes only ^ and &, xnors are interpreted as xors, rest is interpreted as ldr of randomness
   sbox = []
   with open(filename, 'r') as sbox_file:
@@ -245,8 +246,11 @@ if __name__ == "__main__":
   #print(push_up_rhs(sbox, sbox_text), 'swaps occured', file=sys.stderr)
   #print(push_down_lhs(sbox, sbox_text), 'swaps occured', file=sys.stderr)
   print(push_up_rhs(sbox, sbox_text), 'swaps occured', file=sys.stderr)
+
+  #idea that did not really work out:
   #print(priorityschedule(sbox, sbox_text, priorities(sbox)), 'swaps occured', file=sys.stderr)
 
+  #more ideas that did not really work out:
   #print(lifetimes(sbox))
   #print(priorities(sbox))
 
