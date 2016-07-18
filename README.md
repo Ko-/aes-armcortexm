@@ -13,6 +13,8 @@ This collection consists of the following highly optimized FIPS 197 compliant AE
 * Constant-time bitsliced AES-128 encryption/decryption in CTR mode (protected against timing attacks).
 * Masked constant-time bitsliced AES-128 encryption/decryption in CTR mode (protected against timing attacks and first-order side-channel attacks).
 
+They are part of the publication "All the AES You Need on Cortex-M3 and M4", published at [SAC 2016](https://www.engr.mun.ca/~sac2016/), by [Peter Schwabe](https://cryptojedi.org/) and [Ko Stoffelen](https://ko.stoffelen.nl/). The paper is available [here](https://ko.stoffelen.nl/papers/sac2016-aesarm.pdf).
+
 # Performance
 All numbers mentioned below were obtained on the STM32L100C (Cortex-M3) and STM32F407 (Cortex-M4) development boards. Encryption/decryption speeds are cycle/block averages for processing 4096 bytes, averaging over 10000 runs with random inputs, nonces, and keys. Note that all implementations are optimized for speed and therefore fully unrolled. ROM sizes can be reduced drastically with only a small penalty in cycle counts.
 
