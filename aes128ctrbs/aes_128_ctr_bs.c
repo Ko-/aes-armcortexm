@@ -9,8 +9,8 @@ typedef struct param {
     uint8_t rk[2*11*16];
 } param;
 
-extern unsigned int AES_128_keyschedule(const uint8_t *, uint8_t *);
-extern unsigned int AES_128_encrypt_ctr(param const *, const uint8_t *, uint8_t *, uint32_t);
+extern void AES_128_keyschedule(const uint8_t *, uint8_t *);
+extern void AES_128_encrypt_ctr(param const *, const uint8_t *, uint8_t *, uint32_t);
 #define AES_128_decrypt_ctr AES_128_encrypt_ctr
 
 int main(void)

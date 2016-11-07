@@ -1,4 +1,5 @@
 .syntax unified
+.thumb
 
 .align 2
 .type AES_Sbox,%object
@@ -37,10 +38,10 @@ AES_Sbox:
 .word   0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16
 
 .align 2
-@ unsigned int AES_128_keyschedule(const uint8_t *key,
+@ void AES_128_keyschedule(const uint8_t *key,
 @       uint8_t *rk) {
 .global AES_128_keyschedule
-.thumb
+.type   AES_128_keyschedule,%function
 AES_128_keyschedule:
 
     //function prologue, preserve registers
@@ -1244,11 +1245,10 @@ AES_bsconst:
 .word 0xf0f0f0f0
 
 .align 2
-@ unsigned int AES_128_encrypt_ctr(param const *p,
+@ void AES_128_encrypt_ctr(param const *p,
 @       const uint8_t *in, uint8_t *out,
 @       uint32_t len) {
 .global AES_128_encrypt_ctr
-.thumb
 .type   AES_128_encrypt_ctr,%function
 AES_128_encrypt_ctr:
 
