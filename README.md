@@ -3,7 +3,7 @@
 This collection consists of the following highly optimized FIPS 197 compliant AES software implementations. 
 
 * AES-128 key expansion.
-* Single-block AES-128 encryptioni/decryption.
+* Single-block AES-128 encryption/decryption.
 * AES-128 encryption/decryption in CTR mode.
 * AES-192 key expansion.
 * AES-192 encryption/decryption in CTR mode.
@@ -20,13 +20,13 @@ All numbers mentioned below were obtained on the STM32L100C (Cortex-M3) and STM3
 
 | Algorithm | Speed M3 (cycles) | Speed M4 (cycles) | ROM (bytes) | RAM (bytes) |
 |-----------|------------------:|------------------:|------------:|------------:|
-| AES-128 key expansion | 289.8 | 294.8 | 902 (code) + 1024 (data) | 176 (in/out) + 32 (stack) |
-| AES-128 single block encryption | 659.4 | 661.7 | 2034 (code) + 1024 (data) | 176+2m (in/out) + 44 (stack) |
-| AES-128 encryption/decryption in CTR mode | 546.3 | 554.4 | 2192 (code) + 1024 (data) | 192+2m (in/out) + 72 (stack) |  
-| AES-192 key expansion | 265.9 | 272.2 | 810 (code) + 1024 (data) | 208 (in/out) + 32 (stack) |
-| AES-192 encryption/decryption in CTR mode | 663.2 | 673.0 | 2576 (code) + 1024 (data) | 224+2m (in/out) + 72 (stack) |
-| AES-256 key expansion | 364.8 | 371.8 | 1166 (code) + 1024 (data) | 240 (in/out) + 32 (stack) |
-| AES-256 encryption/decryption in CTR mode | 786.9 | 791.7 | 2960 (code) + 1024 (data) | 256+2m (in/out) + 72 (stack) | 
+| AES-128 key expansion | 276.9 | 284.9 | 862 (code) + 1024 (data) | 176 (in/out) + 32 (stack) |
+| AES-128 single block encryption | 639.5 | 644.7 | 1970 (code) + 1024 (data) | 176+2m (in/out) + 44 (stack) |
+| AES-128 encryption/decryption in CTR mode | 531.2 | 537.5 | 2128 (code) + 1024 (data) | 192+2m (in/out) + 72 (stack) |  
+| AES-192 key expansion | 258.8 | 264.2 | 778 (code) + 1024 (data) | 208 (in/out) + 32 (stack) |
+| AES-192 encryption/decryption in CTR mode | 649.1 | 656.0 | 2512 (code) + 1024 (data) | 224+2m (in/out) + 72 (stack) |
+| AES-256 key expansion | 353.8 | 357.9 | 1114 (code) + 1024 (data) | 240 (in/out) + 32 (stack) |
+| AES-256 encryption/decryption in CTR mode | 767.9 | 774.6 | 2896 (code) + 1024 (data) | 256+2m (in/out) + 72 (stack) | 
 | AES-128 key expansion to bitsliced state | 1027.8 | 1033.8 | 3434 (code) + 1036 (data) | 368 (in/out) + 188 (stack) |
 | Constant-time bitsliced AES-128 encryption/decryption in CTR mode | 1616.6 | 1617.6 | 12120 (code) + 12 (data) | 368+2m (in/out) + 108 (stack) |
 | Masked constant-time bitsliced AES-128 encryption/decryption in CTR mode | N/A | 2132.51 (generating randomness) + 5290.1 (rest) | 39916 (code) + 12 (data) | 368+2m (in/out) + 1312 (storing randomness) + 276 (stack rest) |  
