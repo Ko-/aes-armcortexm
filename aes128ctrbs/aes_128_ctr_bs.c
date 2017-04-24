@@ -44,10 +44,9 @@ int main(void)
     param p;
     p.ctr = 0;
     memcpy(p.nonce, nonce, 12);
-    memcpy(p.rk, key, 16);
 
     unsigned int oldcount = DWT_CYCCNT;
-    AES_128_keyschedule(key, p.rk+16);
+    AES_128_keyschedule(key, p.rk);
     unsigned int cyclecount = DWT_CYCCNT-oldcount;
 
 /*
