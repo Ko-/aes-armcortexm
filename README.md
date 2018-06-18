@@ -20,12 +20,12 @@ All numbers mentioned below were obtained on the STM32L100C (Cortex-M3) and STM3
 
 | Algorithm | Speed M3 (cycles) | Speed M4 (cycles) | ROM (bytes) | RAM (bytes) |
 |-----------|------------------:|------------------:|------------:|------------:|
-| AES-128 key expansion | 276.9 | 284.9 | 862 (code) + 1024 (data) | 176 (in/out) + 32 (stack) |
+| AES-128 key expansion | 243.9 | 254.9 | 742 (code) + 1024 (data) | 176 (in/out) + 32 (stack) |
 | AES-128 single block encryption | 639.5 | 644.7 | 1970 (code) + 1024 (data) | 176+2m (in/out) + 44 (stack) |
-| AES-128 encryption/decryption in CTR mode | 531.2 | 537.5 | 2128 (code) + 1024 (data) | 192+2m (in/out) + 72 (stack) |  
-| AES-192 key expansion | 258.8 | 264.2 | 778 (code) + 1024 (data) | 208 (in/out) + 32 (stack) |
-| AES-192 encryption/decryption in CTR mode | 649.1 | 656.0 | 2512 (code) + 1024 (data) | 224+2m (in/out) + 72 (stack) |
-| AES-256 key expansion | 353.8 | 357.9 | 1114 (code) + 1024 (data) | 240 (in/out) + 32 (stack) |
+| AES-128 encryption/decryption in CTR mode | 531.8 | 537.9 | 2128 (code) + 1024 (data) | 192+2m (in/out) + 72 (stack) |  
+| AES-192 key expansion | 232.9 | 240.2 | 682 (code) + 1024 (data) | 208 (in/out) + 32 (stack) |
+| AES-192 encryption/decryption in CTR mode | 651.0 | 656.0 | 2512 (code) + 1024 (data) | 224+2m (in/out) + 72 (stack) |
+| AES-256 key expansion | 315.8 | 319.9 | 958 (code) + 1024 (data) | 240 (in/out) + 32 (stack) |
 | AES-256 encryption/decryption in CTR mode | 767.9 | 774.6 | 2896 (code) + 1024 (data) | 256+2m (in/out) + 72 (stack) | 
 | AES-128 key expansion to bitsliced state | 1027.8 | 1033.8 | 3434 (code) + 1036 (data) | 368 (in/out) + 188 (stack) |
 | Constant-time bitsliced AES-128 encryption/decryption in CTR mode | 1616.6 | 1617.6 | 12120 (code) + 12 (data) | 368+2m (in/out) + 108 (stack) |
