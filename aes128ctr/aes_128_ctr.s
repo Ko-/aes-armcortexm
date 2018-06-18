@@ -90,14 +90,10 @@ AES_128_keyschedule:
     uxtb r10, r7, ror #24
     uxtb r11, r7
 
-    ldr r8, [r3, r8, lsl #2]
-    ldr r9, [r3, r9, lsl #2]
-    ldr r10, [r3, r10, lsl #2]
-    ldr r11, [r3, r11, lsl #2]
-
-    and r8, #0xff
-    and r9, #0xff
-    and r10, #0xff
+    ldrb r8, [r3, r8, lsl #2]
+    ldrb r9, [r3, r9, lsl #2]
+    ldrb r10, [r3, r10, lsl #2]
+    ldrb r11, [r3, r11, lsl #2]
 
     eor r4, #0x00000001 //rcon
     eor r4, r4, r8
@@ -121,14 +117,10 @@ AES_128_keyschedule:
     uxtb r10, r7, ror #24
     uxtb r11, r7
 
-    ldr r8, [r3, r8, lsl #2]
-    ldr r9, [r3, r9, lsl #2]
-    ldr r10, [r3, r10, lsl #2]
-    ldr r11, [r3, r11, lsl #2]
-
-    and r8, #0xff
-    and r9, #0xff
-    and r10, #0xff
+    ldrb r8, [r3, r8, lsl #2]
+    ldrb r9, [r3, r9, lsl #2]
+    ldrb r10, [r3, r10, lsl #2]
+    ldrb r11, [r3, r11, lsl #2]
 
     eor r4, #0x00000002 //rcon
     eor r4, r4, r8
@@ -152,14 +144,10 @@ AES_128_keyschedule:
     uxtb r10, r7, ror #24
     uxtb r11, r7
 
-    ldr r8, [r3, r8, lsl #2]
-    ldr r9, [r3, r9, lsl #2]
-    ldr r10, [r3, r10, lsl #2]
-    ldr r11, [r3, r11, lsl #2]
-
-    and r8, #0xff
-    and r9, #0xff
-    and r10, #0xff
+    ldrb r8, [r3, r8, lsl #2]
+    ldrb r9, [r3, r9, lsl #2]
+    ldrb r10, [r3, r10, lsl #2]
+    ldrb r11, [r3, r11, lsl #2]
 
     eor r4, #0x00000004 //rcon
     eor r4, r4, r8
@@ -183,14 +171,10 @@ AES_128_keyschedule:
     uxtb r10, r7, ror #24
     uxtb r11, r7
 
-    ldr r8, [r3, r8, lsl #2]
-    ldr r9, [r3, r9, lsl #2]
-    ldr r10, [r3, r10, lsl #2]
-    ldr r11, [r3, r11, lsl #2]
-
-    and r8, #0xff
-    and r9, #0xff
-    and r10, #0xff
+    ldrb r8, [r3, r8, lsl #2]
+    ldrb r9, [r3, r9, lsl #2]
+    ldrb r10, [r3, r10, lsl #2]
+    ldrb r11, [r3, r11, lsl #2]
 
     eor r4, #0x00000008 //rcon
     eor r4, r4, r8
@@ -214,14 +198,10 @@ AES_128_keyschedule:
     uxtb r10, r7, ror #24
     uxtb r11, r7
 
-    ldr r8, [r3, r8, lsl #2]
-    ldr r9, [r3, r9, lsl #2]
-    ldr r10, [r3, r10, lsl #2]
-    ldr r11, [r3, r11, lsl #2]
-
-    and r8, #0xff
-    and r9, #0xff
-    and r10, #0xff
+    ldrb r8, [r3, r8, lsl #2]
+    ldrb r9, [r3, r9, lsl #2]
+    ldrb r10, [r3, r10, lsl #2]
+    ldrb r11, [r3, r11, lsl #2]
 
     eor r4, #0x00000010 //rcon
     eor r4, r4, r8
@@ -245,14 +225,10 @@ AES_128_keyschedule:
     uxtb r10, r7, ror #24
     uxtb r11, r7
 
-    ldr r8, [r3, r8, lsl #2]
-    ldr r9, [r3, r9, lsl #2]
-    ldr r10, [r3, r10, lsl #2]
-    ldr r11, [r3, r11, lsl #2]
-
-    and r8, #0xff
-    and r9, #0xff
-    and r10, #0xff
+    ldrb r8, [r3, r8, lsl #2]
+    ldrb r9, [r3, r9, lsl #2]
+    ldrb r10, [r3, r10, lsl #2]
+    ldrb r11, [r3, r11, lsl #2]
 
     eor r4, #0x00000020 //rcon
     eor r4, r4, r8
@@ -276,14 +252,10 @@ AES_128_keyschedule:
     uxtb r10, r7, ror #24
     uxtb r11, r7
 
-    ldr r8, [r3, r8, lsl #2]
-    ldr r9, [r3, r9, lsl #2]
-    ldr r10, [r3, r10, lsl #2]
-    ldr r11, [r3, r11, lsl #2]
-
-    and r8, #0xff
-    and r9, #0xff
-    and r10, #0xff
+    ldrb r8, [r3, r8, lsl #2]
+    ldrb r9, [r3, r9, lsl #2]
+    ldrb r10, [r3, r10, lsl #2]
+    ldrb r11, [r3, r11, lsl #2]
 
     eor r4, #0x00000040 //rcon
     eor r4, r4, r8
@@ -307,14 +279,10 @@ AES_128_keyschedule:
     uxtb r10, r7, ror #24
     uxtb r11, r7
 
-    ldr r8, [r3, r8, lsl #2]
-    ldr r9, [r3, r9, lsl #2]
-    ldr r10, [r3, r10, lsl #2]
-    ldr r11, [r3, r11, lsl #2]
-
-    and r8, #0xff
-    and r9, #0xff
-    and r10, #0xff
+    ldrb r8, [r3, r8, lsl #2]
+    ldrb r9, [r3, r9, lsl #2]
+    ldrb r10, [r3, r10, lsl #2]
+    ldrb r11, [r3, r11, lsl #2]
 
     eor r4, #0x00000080 //rcon
     eor r4, r4, r8
@@ -340,14 +308,10 @@ AES_128_keyschedule:
     uxtb r10, r7, ror #24
     uxtb r11, r7
 
-    ldr r8, [r3, r8, lsl #2]
-    ldr r9, [r3, r9, lsl #2]
-    ldr r10, [r3, r10, lsl #2]
-    ldr r11, [r3, r11, lsl #2]
-
-    and r8, #0xff
-    and r9, #0xff
-    and r10, #0xff
+    ldrb r8, [r3, r8, lsl #2]
+    ldrb r9, [r3, r9, lsl #2]
+    ldrb r10, [r3, r10, lsl #2]
+    ldrb r11, [r3, r11, lsl #2]
 
     eor r4, #0x0000001B //rcon
     eor r4, r4, r8
@@ -371,14 +335,10 @@ AES_128_keyschedule:
     uxtb r10, r7, ror #24
     uxtb r11, r7
 
-    ldr r8, [r3, r8, lsl #2]
-    ldr r9, [r3, r9, lsl #2]
-    ldr r10, [r3, r10, lsl #2]
-    ldr r11, [r3, r11, lsl #2]
-
-    and r8, #0xff
-    and r9, #0xff
-    and r10, #0xff
+    ldrb r8, [r3, r8, lsl #2]
+    ldrb r9, [r3, r9, lsl #2]
+    ldrb r10, [r3, r10, lsl #2]
+    ldrb r11, [r3, r11, lsl #2]
 
     eor r4, #0x00000036 //rcon
     eor r4, r4, r8

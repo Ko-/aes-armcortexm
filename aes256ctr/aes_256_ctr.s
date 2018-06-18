@@ -90,14 +90,10 @@ AES_256_keyschedule:
     uxtb r12, r9, ror #24
     uxtb r14, r9
 
-    ldr r10, [r0, r10, lsl #2]
-    ldr r11, [r0, r11, lsl #2]
-    ldr r12, [r0, r12, lsl #2]
-    ldr r14, [r0, r14, lsl #2]
-
-    and r10, #0xff
-    and r11, #0xff
-    and r12, #0xff
+    ldrb r10, [r0, r10, lsl #2]
+    ldrb r11, [r0, r11, lsl #2]
+    ldrb r12, [r0, r12, lsl #2]
+    ldrb r14, [r0, r14, lsl #2]
 
     eor r2, #0x00000001 //rcon
     eor r2, r2, r10
@@ -113,14 +109,10 @@ AES_256_keyschedule:
     uxtb r12, r5
     uxtb r14, r5, ror #24
 
-    ldr r10, [r0, r10, lsl #2]
-    ldr r11, [r0, r11, lsl #2]
-    ldr r12, [r0, r12, lsl #2]
-    ldr r14, [r0, r14, lsl #2]
-
-    and r10, #0xff
-    and r11, #0xff
-    and r12, #0xff
+    ldrb r10, [r0, r10, lsl #2]
+    ldrb r11, [r0, r11, lsl #2]
+    ldrb r12, [r0, r12, lsl #2]
+    ldrb r14, [r0, r14, lsl #2]
 
     eor r6, r6, r10, lsl #16
     eor r6, r6, r11, lsl #8
@@ -147,14 +139,10 @@ AES_256_keyschedule:
     uxtb r12, r9, ror #24
     uxtb r14, r9
 
-    ldr r10, [r0, r10, lsl #2]
-    ldr r11, [r0, r11, lsl #2]
-    ldr r12, [r0, r12, lsl #2]
-    ldr r14, [r0, r14, lsl #2]
-
-    and r10, #0xff
-    and r11, #0xff
-    and r12, #0xff
+    ldrb r10, [r0, r10, lsl #2]
+    ldrb r11, [r0, r11, lsl #2]
+    ldrb r12, [r0, r12, lsl #2]
+    ldrb r14, [r0, r14, lsl #2]
 
     eor r2, #0x00000002 //rcon
     eor r2, r2, r10
@@ -170,14 +158,10 @@ AES_256_keyschedule:
     uxtb r12, r5
     uxtb r14, r5, ror #24
 
-    ldr r10, [r0, r10, lsl #2]
-    ldr r11, [r0, r11, lsl #2]
-    ldr r12, [r0, r12, lsl #2]
-    ldr r14, [r0, r14, lsl #2]
-
-    and r10, #0xff
-    and r11, #0xff
-    and r12, #0xff
+    ldrb r10, [r0, r10, lsl #2]
+    ldrb r11, [r0, r11, lsl #2]
+    ldrb r12, [r0, r12, lsl #2]
+    ldrb r14, [r0, r14, lsl #2]
 
     eor r6, r6, r10, lsl #16
     eor r6, r6, r11, lsl #8
@@ -204,14 +188,10 @@ AES_256_keyschedule:
     uxtb r12, r9, ror #24
     uxtb r14, r9
 
-    ldr r10, [r0, r10, lsl #2]
-    ldr r11, [r0, r11, lsl #2]
-    ldr r12, [r0, r12, lsl #2]
-    ldr r14, [r0, r14, lsl #2]
-
-    and r10, #0xff
-    and r11, #0xff
-    and r12, #0xff
+    ldrb r10, [r0, r10, lsl #2]
+    ldrb r11, [r0, r11, lsl #2]
+    ldrb r12, [r0, r12, lsl #2]
+    ldrb r14, [r0, r14, lsl #2]
 
     eor r2, #0x00000004 //rcon
     eor r2, r2, r10
@@ -227,14 +207,10 @@ AES_256_keyschedule:
     uxtb r12, r5
     uxtb r14, r5, ror #24
 
-    ldr r10, [r0, r10, lsl #2]
-    ldr r11, [r0, r11, lsl #2]
-    ldr r12, [r0, r12, lsl #2]
-    ldr r14, [r0, r14, lsl #2]
-
-    and r10, #0xff
-    and r11, #0xff
-    and r12, #0xff
+    ldrb r10, [r0, r10, lsl #2]
+    ldrb r11, [r0, r11, lsl #2]
+    ldrb r12, [r0, r12, lsl #2]
+    ldrb r14, [r0, r14, lsl #2]
 
     eor r6, r6, r10, lsl #16
     eor r6, r6, r11, lsl #8
@@ -261,14 +237,10 @@ AES_256_keyschedule:
     uxtb r12, r9, ror #24
     uxtb r14, r9
 
-    ldr r10, [r0, r10, lsl #2]
-    ldr r11, [r0, r11, lsl #2]
-    ldr r12, [r0, r12, lsl #2]
-    ldr r14, [r0, r14, lsl #2]
-
-    and r10, #0xff
-    and r11, #0xff
-    and r12, #0xff
+    ldrb r10, [r0, r10, lsl #2]
+    ldrb r11, [r0, r11, lsl #2]
+    ldrb r12, [r0, r12, lsl #2]
+    ldrb r14, [r0, r14, lsl #2]
 
     eor r2, #0x00000008 //rcon
     eor r2, r2, r10
@@ -284,14 +256,10 @@ AES_256_keyschedule:
     uxtb r12, r5
     uxtb r14, r5, ror #24
 
-    ldr r10, [r0, r10, lsl #2]
-    ldr r11, [r0, r11, lsl #2]
-    ldr r12, [r0, r12, lsl #2]
-    ldr r14, [r0, r14, lsl #2]
-
-    and r10, #0xff
-    and r11, #0xff
-    and r12, #0xff
+    ldrb r10, [r0, r10, lsl #2]
+    ldrb r11, [r0, r11, lsl #2]
+    ldrb r12, [r0, r12, lsl #2]
+    ldrb r14, [r0, r14, lsl #2]
 
     eor r6, r6, r10, lsl #16
     eor r6, r6, r11, lsl #8
@@ -320,14 +288,10 @@ AES_256_keyschedule:
     uxtb r12, r9, ror #24
     uxtb r14, r9
 
-    ldr r10, [r0, r10, lsl #2]
-    ldr r11, [r0, r11, lsl #2]
-    ldr r12, [r0, r12, lsl #2]
-    ldr r14, [r0, r14, lsl #2]
-
-    and r10, #0xff
-    and r11, #0xff
-    and r12, #0xff
+    ldrb r10, [r0, r10, lsl #2]
+    ldrb r11, [r0, r11, lsl #2]
+    ldrb r12, [r0, r12, lsl #2]
+    ldrb r14, [r0, r14, lsl #2]
 
     eor r2, #0x00000010 //rcon
     eor r2, r2, r10
@@ -343,14 +307,10 @@ AES_256_keyschedule:
     uxtb r12, r5
     uxtb r14, r5, ror #24
 
-    ldr r10, [r0, r10, lsl #2]
-    ldr r11, [r0, r11, lsl #2]
-    ldr r12, [r0, r12, lsl #2]
-    ldr r14, [r0, r14, lsl #2]
-
-    and r10, #0xff
-    and r11, #0xff
-    and r12, #0xff
+    ldrb r10, [r0, r10, lsl #2]
+    ldrb r11, [r0, r11, lsl #2]
+    ldrb r12, [r0, r12, lsl #2]
+    ldrb r14, [r0, r14, lsl #2]
 
     eor r6, r6, r10, lsl #16
     eor r6, r6, r11, lsl #8
@@ -377,14 +337,10 @@ AES_256_keyschedule:
     uxtb r12, r9, ror #24
     uxtb r14, r9
 
-    ldr r10, [r0, r10, lsl #2]
-    ldr r11, [r0, r11, lsl #2]
-    ldr r12, [r0, r12, lsl #2]
-    ldr r14, [r0, r14, lsl #2]
-
-    and r10, #0xff
-    and r11, #0xff
-    and r12, #0xff
+    ldrb r10, [r0, r10, lsl #2]
+    ldrb r11, [r0, r11, lsl #2]
+    ldrb r12, [r0, r12, lsl #2]
+    ldrb r14, [r0, r14, lsl #2]
 
     eor r2, #0x00000020 //rcon
     eor r2, r2, r10
@@ -400,14 +356,10 @@ AES_256_keyschedule:
     uxtb r12, r5
     uxtb r14, r5, ror #24
 
-    ldr r10, [r0, r10, lsl #2]
-    ldr r11, [r0, r11, lsl #2]
-    ldr r12, [r0, r12, lsl #2]
-    ldr r14, [r0, r14, lsl #2]
-
-    and r10, #0xff
-    and r11, #0xff
-    and r12, #0xff
+    ldrb r10, [r0, r10, lsl #2]
+    ldrb r11, [r0, r11, lsl #2]
+    ldrb r12, [r0, r12, lsl #2]
+    ldrb r14, [r0, r14, lsl #2]
 
     eor r6, r6, r10, lsl #16
     eor r6, r6, r11, lsl #8
@@ -434,14 +386,10 @@ AES_256_keyschedule:
     uxtb r12, r9, ror #24
     uxtb r14, r9
 
-    ldr r10, [r0, r10, lsl #2]
-    ldr r11, [r0, r11, lsl #2]
-    ldr r12, [r0, r12, lsl #2]
-    ldr r14, [r0, r14, lsl #2]
-
-    and r10, #0xff
-    and r11, #0xff
-    and r12, #0xff
+    ldrb r10, [r0, r10, lsl #2]
+    ldrb r11, [r0, r11, lsl #2]
+    ldrb r12, [r0, r12, lsl #2]
+    ldrb r14, [r0, r14, lsl #2]
 
     eor r2, #0x00000040 //rcon
     eor r2, r2, r10
