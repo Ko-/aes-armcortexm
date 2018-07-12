@@ -1256,6 +1256,7 @@ AES_128_encrypt_ctr:
     push {r0-r12,r14}
 
     adr r14, AES_bsconst
+    sub sp, #52
 
 .align 2
 encrypt_blocks: //expect p in r0, AES_bsconst in r14
@@ -1268,7 +1269,9 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     mov r11, r7
 
     //increase one ctr
-    add r8, #1 //won't overflow, only 2^32 blocks allowed
+    rev r11, r11
+    add r11, #1 //won't overflow, only 2^32 blocks allowed
+    rev r11, r11
 
     //transform state of two blocks into bitsliced form
     //general swapmoves moves {r4-r11} to {r4,8,5,9,6,10,7,11} so correct for this to have {r4-r11} again
@@ -1343,7 +1346,7 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     //round 1
 
     //AddRoundKey
-    //pop {r0} not necessary in round 1, p.rk already in r0
+    //ldr.w r0, [sp, #48] not necessary in round 1, p.rk already in r0
     ldmia r0!, {r1-r3,r12}
     eor r4, r1
     eor r5, r2
@@ -1354,7 +1357,7 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor r9, r2
     eor r10, r3
     eor r11, r12
-    push.w {r0} //must push, don't want to destroy original p.rk
+    str.w r0, [sp, #48] //must store, don't want to destroy original p.rk
 
     //SubBytes
     //Result of combining http://www.cs.yale.edu/homes/peralta/CircuitStuff/SLP_AES_113.txt with my custom instruction scheduler / register allocator
@@ -1367,34 +1370,34 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     and r12,  r2, r14    //Exec t2 = y12 & y15; into r12
     eor  r8, r14, r11    //Exec y6 = y15 ^ U7; into r8
     eor  r0,  r0,  r5    //Exec y20 = t1 ^ U1; into r0
-    str  r2, [sp, #-4 ]  //Store r2/y12 on stack
+    str.w r2, [sp, #44]   //Store r2/y12 on stack
     eor  r2,  r4,  r7    //Exec y9 = U0 ^ U3; into r2
-    str  r0, [sp, #-8 ]  //Store r0/y20 on stack
+    str  r0, [sp, #40]   //Store r0/y20 on stack
     eor  r0,  r0,  r2    //Exec y11 = y20 ^ y9; into r0
-    str  r2, [sp, #-12]  //Store r2/y9 on stack
+    str  r2, [sp, #36]   //Store r2/y9 on stack
     and  r2,  r2,  r0    //Exec t12 = y9 & y11; into r2
-    str  r8, [sp, #-16]  //Store r8/y6 on stack
+    str  r8, [sp, #32]   //Store r8/y6 on stack
     eor  r8, r11,  r0    //Exec y7 = U7 ^ y11; into r8
     eor  r9,  r4,  r9    //Exec y8 = U0 ^ U5; into r9
     eor  r6,  r5,  r6    //Exec t0 = U1 ^ U2; into r6
     eor  r5, r14,  r6    //Exec y10 = y15 ^ t0; into r5
-    str r14, [sp, #-20]  //Store r14/y15 on stack
+    str r14, [sp, #28]   //Store r14/y15 on stack
     eor r14,  r5,  r0    //Exec y17 = y10 ^ y11; into r14
-    str  r1, [sp, #-24]  //Store r1/y14 on stack
+    str.w r1, [sp, #24]   //Store r1/y14 on stack
     and  r1,  r1, r14    //Exec t13 = y14 & y17; into r1
     eor  r1,  r1,  r2    //Exec t14 = t13 ^ t12; into r1
-    str r14, [sp, #-28]  //Store r14/y17 on stack
+    str r14, [sp, #20]   //Store r14/y17 on stack
     eor r14,  r5,  r9    //Exec y19 = y10 ^ y8; into r14
-    str  r5, [sp, #-32]  //Store r5/y10 on stack
+    str.w r5, [sp, #16]   //Store r5/y10 on stack
     and  r5,  r9,  r5    //Exec t15 = y8 & y10; into r5
     eor  r2,  r5,  r2    //Exec t16 = t15 ^ t12; into r2
     eor  r5,  r6,  r0    //Exec y16 = t0 ^ y11; into r5
-    str  r0, [sp, #-36]  //Store r0/y11 on stack
+    str.w r0, [sp, #12]   //Store r0/y11 on stack
     eor  r0,  r3,  r5    //Exec y21 = y13 ^ y16; into r0
-    str  r3, [sp, #-40]  //Store r3/y13 on stack
+    str  r3, [sp, #8]    //Store r3/y13 on stack
     and  r3,  r3,  r5    //Exec t7 = y13 & y16; into r3
-    str  r5, [sp, #-44]  //Store r5/y16 on stack
-    str r11, [sp, #-48]  //Store r11/U7 on stack
+    str  r5, [sp, #4]    //Store r5/y16 on stack
+    str r11, [sp, #0]    //Store r11/U7 on stack
     eor  r5,  r4,  r5    //Exec y18 = U0 ^ y16; into r5
     eor  r6,  r6, r11    //Exec y1 = t0 ^ U7; into r6
     eor  r7,  r6,  r7    //Exec y4 = y1 ^ U3; into r7
@@ -1413,11 +1416,11 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r3,  r3,  r1    //Exec t19 = t9 ^ t14; into r3
     eor  r3,  r3,  r0    //Exec t23 = t19 ^ y21; into r3
     eor  r0, r10,  r9    //Exec y3 = y5 ^ y8; into r0
-    ldr r11, [sp, #-16]  //Load y6 into r11
+    ldr r11, [sp, #32]   //Load y6 into r11
     and  r5,  r0, r11    //Exec t3 = y3 & y6; into r5
     eor r12,  r5, r12    //Exec t4 = t3 ^ t2; into r12
-    ldr  r5, [sp, #-8 ]  //Load y20 into r5
-    str  r7, [sp, #-16]  //Store r7/y4 on stack
+    ldr  r5, [sp, #40]   //Load y20 into r5
+    str  r7, [sp, #32]   //Store r7/y4 on stack
     eor r12, r12,  r5    //Exec t17 = t4 ^ y20; into r12
     eor  r1, r12,  r1    //Exec t21 = t17 ^ t14; into r1
     and r12,  r1,  r3    //Exec t26 = t21 & t23; into r12
@@ -1437,11 +1440,11 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     and  r5, r14,  r5    //Exec t39 = t29 & t38; into r5
     eor  r1,  r1,  r5    //Exec t40 = t25 ^ t39; into r1
     eor  r5, r14,  r1    //Exec t43 = t29 ^ t40; into r5
-    ldr  r7, [sp, #-44]  //Load y16 into r7
+    ldr.w r7, [sp, #4]    //Load y16 into r7
     and  r7,  r5,  r7    //Exec z3 = t43 & y16; into r7
     eor  r8,  r7,  r8    //Exec tc12 = z3 ^ z5; into r8
-    str  r8, [sp, #-8 ]  //Store r8/tc12 on stack
-    ldr  r8, [sp, #-40]  //Load y13 into r8
+    str  r8, [sp, #40]   //Store r8/tc12 on stack
+    ldr  r8, [sp, #8]    //Load y13 into r8
     and  r8,  r5,  r8    //Exec z12 = t43 & y13; into r8
     and r10,  r1, r10    //Exec z13 = t40 & y5; into r10
     and  r6,  r1,  r6    //Exec z4 = t40 & y1; into r6
@@ -1449,31 +1452,31 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r3,  r3, r12    //Exec t34 = t23 ^ t33; into r3
     eor  r3,  r2,  r3    //Exec t37 = t36 ^ t34; into r3
     eor  r1,  r1,  r3    //Exec t41 = t40 ^ t37; into r1
-    ldr  r5, [sp, #-32]  //Load y10 into r5
+    ldr.w r5, [sp, #16]   //Load y10 into r5
     and  r2,  r1,  r5    //Exec z8 = t41 & y10; into r2
     and  r9,  r1,  r9    //Exec z17 = t41 & y8; into r9
-    str  r9, [sp, #-32]  //Store r9/z17 on stack
+    str  r9, [sp, #16]   //Store r9/z17 on stack
     eor  r5, r12,  r3    //Exec t44 = t33 ^ t37; into r5
-    ldr  r7, [sp, #-20]  //Load y15 into r7
-    ldr  r9, [sp, #-4 ]  //Load y12 into r9
+    ldr.w r7, [sp, #28]   //Load y15 into r7
+    ldr  r9, [sp, #44]   //Load y12 into r9
     and  r7,  r5,  r7    //Exec z0 = t44 & y15; into r7
     and  r9,  r5,  r9    //Exec z9 = t44 & y12; into r9
     and  r0,  r3,  r0    //Exec z10 = t37 & y3; into r0
     and  r3,  r3, r11    //Exec z1 = t37 & y6; into r3
     eor  r3,  r3,  r7    //Exec tc5 = z1 ^ z0; into r3
     eor  r3,  r6,  r3    //Exec tc11 = tc6 ^ tc5; into r3
-    ldr r11, [sp, #-16]  //Load y4 into r11
-    ldr  r5, [sp, #-28]  //Load y17 into r5
+    ldr r11, [sp, #32]   //Load y4 into r11
+    ldr.w r5, [sp, #20]   //Load y17 into r5
     and r11, r12, r11    //Exec z11 = t33 & y4; into r11
     eor r14, r14, r12    //Exec t42 = t29 ^ t33; into r14
     eor  r1, r14,  r1    //Exec t45 = t42 ^ t41; into r1
     and  r5,  r1,  r5    //Exec z7 = t45 & y17; into r5
     eor  r6,  r5,  r6    //Exec tc8 = z7 ^ tc6; into r6
-    ldr  r5, [sp, #-24]  //Load y14 into r5
-    str  r4, [sp, #-16]  //Store r4/z14 on stack
+    ldr.w r5, [sp, #24]   //Load y14 into r5
+    str.w r4, [sp, #32]   //Store r4/z14 on stack
     and  r1,  r1,  r5    //Exec z16 = t45 & y14; into r1
-    ldr  r5, [sp, #-36]  //Load y11 into r5
-    ldr  r4, [sp, #-12]  //Load y9 into r4
+    ldr  r5, [sp, #12]   //Load y11 into r5
+    ldr  r4, [sp, #36]   //Load y9 into r4
     and  r5, r14,  r5    //Exec z6 = t42 & y11; into r5
     eor  r5,  r5,  r6    //Exec tc16 = z6 ^ tc8; into r5
     and  r4, r14,  r4    //Exec z15 = t42 & y9; into r4
@@ -1486,18 +1489,18 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r9,  r9,  r3    //Exec S3 = tc3 ^ tc11; into r9
     eor  r3,  r9,  r5    //Exec S1 = S3 ^ tc16 ^ 1; into r3
     eor r11, r10,  r4    //Exec tc13 = z13 ^ tc1; into r11
-    ldr  r4, [sp, #-48]  //Load U7 into r4
+    ldr.w r4, [sp, #0]    //Load U7 into r4
     and r12, r12,  r4    //Exec z2 = t33 & U7; into r12
     eor  r7,  r7, r12    //Exec tc4 = z0 ^ z2; into r7
     eor r12,  r8,  r7    //Exec tc7 = z12 ^ tc4; into r12
     eor  r2,  r2, r12    //Exec tc9 = z8 ^ tc7; into r2
     eor  r2,  r6,  r2    //Exec tc10 = tc8 ^ tc9; into r2
-    ldr  r4, [sp, #-16]  //Load z14 into r4
+    ldr.w r4, [sp, #32]   //Load z14 into r4
     eor r12,  r4,  r2    //Exec tc17 = z14 ^ tc10; into r12
     eor  r0,  r0, r12    //Exec S5 = tc21 ^ tc17; into r0
     eor  r6, r12, r14    //Exec tc26 = tc17 ^ tc20; into r6
-    ldr  r4, [sp, #-32]  //Load z17 into r4
-    ldr r12, [sp, #-8 ]  //Load tc12 into r12
+    ldr.w r4, [sp, #16]   //Load z17 into r4
+    ldr r12, [sp, #40]   //Load tc12 into r12
     eor  r6,  r6,  r4    //Exec S2 = tc26 ^ z17 ^ 1; into r6
     eor r12,  r7, r12    //Exec tc14 = tc4 ^ tc12; into r12
     eor r14, r11, r12    //Exec tc18 = tc13 ^ tc14; into r14
@@ -1659,7 +1662,7 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor r8, r3, r8, ror #8
     eor r7, r12, r7, ror #8
     eor r11, r0, r11, ror #8
-    pop.w {r0} //for AddRoundKey, interleaving saves 10 cycles
+    ldr.w r0, [sp, #48] //for AddRoundKey, interleaving saves 10 cycles
     eor r10, r2, r10, ror #8
 
     //round 2
@@ -1675,7 +1678,7 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor r9, r2, r9, ror #8
     eor r10, r3, r10, ror #8
     eor r11, r12, r11, ror #8
-    push.w {r0} //must push, don't want to destroy original p.rk
+    str.w r0, [sp, #48] //must store, don't want to destroy original p.rk
 
     //SubBytes
     //Result of combining http://www.cs.yale.edu/homes/peralta/CircuitStuff/SLP_AES_113.txt with my custom instruction scheduler / register allocator
@@ -1688,34 +1691,34 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     and r12,  r2, r14    //Exec t2 = y12 & y15; into r12
     eor  r8, r14, r11    //Exec y6 = y15 ^ U7; into r8
     eor  r0,  r0,  r5    //Exec y20 = t1 ^ U1; into r0
-    str  r2, [sp, #-4 ]  //Store r2/y12 on stack
+    str.w r2, [sp, #44]   //Store r2/y12 on stack
     eor  r2,  r4,  r7    //Exec y9 = U0 ^ U3; into r2
-    str  r0, [sp, #-8 ]  //Store r0/y20 on stack
+    str  r0, [sp, #40]   //Store r0/y20 on stack
     eor  r0,  r0,  r2    //Exec y11 = y20 ^ y9; into r0
-    str  r2, [sp, #-12]  //Store r2/y9 on stack
+    str  r2, [sp, #36]   //Store r2/y9 on stack
     and  r2,  r2,  r0    //Exec t12 = y9 & y11; into r2
-    str  r8, [sp, #-16]  //Store r8/y6 on stack
+    str  r8, [sp, #32]   //Store r8/y6 on stack
     eor  r8, r11,  r0    //Exec y7 = U7 ^ y11; into r8
     eor  r9,  r4,  r9    //Exec y8 = U0 ^ U5; into r9
     eor  r6,  r5,  r6    //Exec t0 = U1 ^ U2; into r6
     eor  r5, r14,  r6    //Exec y10 = y15 ^ t0; into r5
-    str r14, [sp, #-20]  //Store r14/y15 on stack
+    str r14, [sp, #28]   //Store r14/y15 on stack
     eor r14,  r5,  r0    //Exec y17 = y10 ^ y11; into r14
-    str  r1, [sp, #-24]  //Store r1/y14 on stack
+    str.w r1, [sp, #24]   //Store r1/y14 on stack
     and  r1,  r1, r14    //Exec t13 = y14 & y17; into r1
     eor  r1,  r1,  r2    //Exec t14 = t13 ^ t12; into r1
-    str r14, [sp, #-28]  //Store r14/y17 on stack
+    str r14, [sp, #20]   //Store r14/y17 on stack
     eor r14,  r5,  r9    //Exec y19 = y10 ^ y8; into r14
-    str  r5, [sp, #-32]  //Store r5/y10 on stack
+    str.w r5, [sp, #16]   //Store r5/y10 on stack
     and  r5,  r9,  r5    //Exec t15 = y8 & y10; into r5
     eor  r2,  r5,  r2    //Exec t16 = t15 ^ t12; into r2
     eor  r5,  r6,  r0    //Exec y16 = t0 ^ y11; into r5
-    str  r0, [sp, #-36]  //Store r0/y11 on stack
+    str.w r0, [sp, #12]   //Store r0/y11 on stack
     eor  r0,  r3,  r5    //Exec y21 = y13 ^ y16; into r0
-    str  r3, [sp, #-40]  //Store r3/y13 on stack
+    str  r3, [sp, #8]    //Store r3/y13 on stack
     and  r3,  r3,  r5    //Exec t7 = y13 & y16; into r3
-    str  r5, [sp, #-44]  //Store r5/y16 on stack
-    str r11, [sp, #-48]  //Store r11/U7 on stack
+    str  r5, [sp, #4]    //Store r5/y16 on stack
+    str r11, [sp, #0]    //Store r11/U7 on stack
     eor  r5,  r4,  r5    //Exec y18 = U0 ^ y16; into r5
     eor  r6,  r6, r11    //Exec y1 = t0 ^ U7; into r6
     eor  r7,  r6,  r7    //Exec y4 = y1 ^ U3; into r7
@@ -1734,11 +1737,11 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r3,  r3,  r1    //Exec t19 = t9 ^ t14; into r3
     eor  r3,  r3,  r0    //Exec t23 = t19 ^ y21; into r3
     eor  r0, r10,  r9    //Exec y3 = y5 ^ y8; into r0
-    ldr r11, [sp, #-16]  //Load y6 into r11
+    ldr r11, [sp, #32]   //Load y6 into r11
     and  r5,  r0, r11    //Exec t3 = y3 & y6; into r5
     eor r12,  r5, r12    //Exec t4 = t3 ^ t2; into r12
-    ldr  r5, [sp, #-8 ]  //Load y20 into r5
-    str  r7, [sp, #-16]  //Store r7/y4 on stack
+    ldr  r5, [sp, #40]   //Load y20 into r5
+    str  r7, [sp, #32]   //Store r7/y4 on stack
     eor r12, r12,  r5    //Exec t17 = t4 ^ y20; into r12
     eor  r1, r12,  r1    //Exec t21 = t17 ^ t14; into r1
     and r12,  r1,  r3    //Exec t26 = t21 & t23; into r12
@@ -1758,11 +1761,11 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     and  r5, r14,  r5    //Exec t39 = t29 & t38; into r5
     eor  r1,  r1,  r5    //Exec t40 = t25 ^ t39; into r1
     eor  r5, r14,  r1    //Exec t43 = t29 ^ t40; into r5
-    ldr  r7, [sp, #-44]  //Load y16 into r7
+    ldr.w r7, [sp, #4]    //Load y16 into r7
     and  r7,  r5,  r7    //Exec z3 = t43 & y16; into r7
     eor  r8,  r7,  r8    //Exec tc12 = z3 ^ z5; into r8
-    str  r8, [sp, #-8 ]  //Store r8/tc12 on stack
-    ldr  r8, [sp, #-40]  //Load y13 into r8
+    str  r8, [sp, #40]   //Store r8/tc12 on stack
+    ldr  r8, [sp, #8]    //Load y13 into r8
     and  r8,  r5,  r8    //Exec z12 = t43 & y13; into r8
     and r10,  r1, r10    //Exec z13 = t40 & y5; into r10
     and  r6,  r1,  r6    //Exec z4 = t40 & y1; into r6
@@ -1770,31 +1773,31 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r3,  r3, r12    //Exec t34 = t23 ^ t33; into r3
     eor  r3,  r2,  r3    //Exec t37 = t36 ^ t34; into r3
     eor  r1,  r1,  r3    //Exec t41 = t40 ^ t37; into r1
-    ldr  r5, [sp, #-32]  //Load y10 into r5
+    ldr.w r5, [sp, #16]   //Load y10 into r5
     and  r2,  r1,  r5    //Exec z8 = t41 & y10; into r2
     and  r9,  r1,  r9    //Exec z17 = t41 & y8; into r9
-    str  r9, [sp, #-32]  //Store r9/z17 on stack
+    str  r9, [sp, #16]   //Store r9/z17 on stack
     eor  r5, r12,  r3    //Exec t44 = t33 ^ t37; into r5
-    ldr  r7, [sp, #-20]  //Load y15 into r7
-    ldr  r9, [sp, #-4 ]  //Load y12 into r9
+    ldr.w r7, [sp, #28]   //Load y15 into r7
+    ldr  r9, [sp, #44]   //Load y12 into r9
     and  r7,  r5,  r7    //Exec z0 = t44 & y15; into r7
     and  r9,  r5,  r9    //Exec z9 = t44 & y12; into r9
     and  r0,  r3,  r0    //Exec z10 = t37 & y3; into r0
     and  r3,  r3, r11    //Exec z1 = t37 & y6; into r3
     eor  r3,  r3,  r7    //Exec tc5 = z1 ^ z0; into r3
     eor  r3,  r6,  r3    //Exec tc11 = tc6 ^ tc5; into r3
-    ldr r11, [sp, #-16]  //Load y4 into r11
-    ldr  r5, [sp, #-28]  //Load y17 into r5
+    ldr r11, [sp, #32]   //Load y4 into r11
+    ldr.w r5, [sp, #20]   //Load y17 into r5
     and r11, r12, r11    //Exec z11 = t33 & y4; into r11
     eor r14, r14, r12    //Exec t42 = t29 ^ t33; into r14
     eor  r1, r14,  r1    //Exec t45 = t42 ^ t41; into r1
     and  r5,  r1,  r5    //Exec z7 = t45 & y17; into r5
     eor  r6,  r5,  r6    //Exec tc8 = z7 ^ tc6; into r6
-    ldr  r5, [sp, #-24]  //Load y14 into r5
-    str  r4, [sp, #-16]  //Store r4/z14 on stack
+    ldr.w r5, [sp, #24]   //Load y14 into r5
+    str.w r4, [sp, #32]   //Store r4/z14 on stack
     and  r1,  r1,  r5    //Exec z16 = t45 & y14; into r1
-    ldr  r5, [sp, #-36]  //Load y11 into r5
-    ldr  r4, [sp, #-12]  //Load y9 into r4
+    ldr  r5, [sp, #12]   //Load y11 into r5
+    ldr  r4, [sp, #36]   //Load y9 into r4
     and  r5, r14,  r5    //Exec z6 = t42 & y11; into r5
     eor  r5,  r5,  r6    //Exec tc16 = z6 ^ tc8; into r5
     and  r4, r14,  r4    //Exec z15 = t42 & y9; into r4
@@ -1807,18 +1810,18 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r9,  r9,  r3    //Exec S3 = tc3 ^ tc11; into r9
     eor  r3,  r9,  r5    //Exec S1 = S3 ^ tc16 ^ 1; into r3
     eor r11, r10,  r4    //Exec tc13 = z13 ^ tc1; into r11
-    ldr  r4, [sp, #-48]  //Load U7 into r4
+    ldr.w r4, [sp, #0]    //Load U7 into r4
     and r12, r12,  r4    //Exec z2 = t33 & U7; into r12
     eor  r7,  r7, r12    //Exec tc4 = z0 ^ z2; into r7
     eor r12,  r8,  r7    //Exec tc7 = z12 ^ tc4; into r12
     eor  r2,  r2, r12    //Exec tc9 = z8 ^ tc7; into r2
     eor  r2,  r6,  r2    //Exec tc10 = tc8 ^ tc9; into r2
-    ldr  r4, [sp, #-16]  //Load z14 into r4
+    ldr.w r4, [sp, #32]   //Load z14 into r4
     eor r12,  r4,  r2    //Exec tc17 = z14 ^ tc10; into r12
     eor  r0,  r0, r12    //Exec S5 = tc21 ^ tc17; into r0
     eor  r6, r12, r14    //Exec tc26 = tc17 ^ tc20; into r6
-    ldr  r4, [sp, #-32]  //Load z17 into r4
-    ldr r12, [sp, #-8 ]  //Load tc12 into r12
+    ldr.w r4, [sp, #16]   //Load z17 into r4
+    ldr r12, [sp, #40]   //Load tc12 into r12
     eor  r6,  r6,  r4    //Exec S2 = tc26 ^ z17 ^ 1; into r6
     eor r12,  r7, r12    //Exec tc14 = tc4 ^ tc12; into r12
     eor r14, r11, r12    //Exec tc18 = tc13 ^ tc14; into r14
@@ -1980,7 +1983,7 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor r8, r3, r8, ror #8
     eor r7, r12, r7, ror #8
     eor r11, r0, r11, ror #8
-    pop.w {r0} //for AddRoundKey, interleaving saves 10 cycles
+    ldr.w r0, [sp, #48] //for AddRoundKey, interleaving saves 10 cycles
     eor r10, r2, r10, ror #8
 
     //round 3
@@ -1996,7 +1999,7 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor r9, r2, r9, ror #8
     eor r10, r3, r10, ror #8
     eor r11, r12, r11, ror #8
-    push.w {r0} //must push, don't want to destroy original p.rk
+    str.w r0, [sp, #48] //must store, don't want to destroy original p.rk
 
     //SubBytes
     //Result of combining http://www.cs.yale.edu/homes/peralta/CircuitStuff/SLP_AES_113.txt with my custom instruction scheduler / register allocator
@@ -2009,34 +2012,34 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     and r12,  r2, r14    //Exec t2 = y12 & y15; into r12
     eor  r8, r14, r11    //Exec y6 = y15 ^ U7; into r8
     eor  r0,  r0,  r5    //Exec y20 = t1 ^ U1; into r0
-    str  r2, [sp, #-4 ]  //Store r2/y12 on stack
+    str.w r2, [sp, #44]   //Store r2/y12 on stack
     eor  r2,  r4,  r7    //Exec y9 = U0 ^ U3; into r2
-    str  r0, [sp, #-8 ]  //Store r0/y20 on stack
+    str  r0, [sp, #40]   //Store r0/y20 on stack
     eor  r0,  r0,  r2    //Exec y11 = y20 ^ y9; into r0
-    str  r2, [sp, #-12]  //Store r2/y9 on stack
+    str  r2, [sp, #36]   //Store r2/y9 on stack
     and  r2,  r2,  r0    //Exec t12 = y9 & y11; into r2
-    str  r8, [sp, #-16]  //Store r8/y6 on stack
+    str  r8, [sp, #32]   //Store r8/y6 on stack
     eor  r8, r11,  r0    //Exec y7 = U7 ^ y11; into r8
     eor  r9,  r4,  r9    //Exec y8 = U0 ^ U5; into r9
     eor  r6,  r5,  r6    //Exec t0 = U1 ^ U2; into r6
     eor  r5, r14,  r6    //Exec y10 = y15 ^ t0; into r5
-    str r14, [sp, #-20]  //Store r14/y15 on stack
+    str r14, [sp, #28]   //Store r14/y15 on stack
     eor r14,  r5,  r0    //Exec y17 = y10 ^ y11; into r14
-    str  r1, [sp, #-24]  //Store r1/y14 on stack
+    str.w r1, [sp, #24]   //Store r1/y14 on stack
     and  r1,  r1, r14    //Exec t13 = y14 & y17; into r1
     eor  r1,  r1,  r2    //Exec t14 = t13 ^ t12; into r1
-    str r14, [sp, #-28]  //Store r14/y17 on stack
+    str r14, [sp, #20]   //Store r14/y17 on stack
     eor r14,  r5,  r9    //Exec y19 = y10 ^ y8; into r14
-    str  r5, [sp, #-32]  //Store r5/y10 on stack
+    str.w r5, [sp, #16]   //Store r5/y10 on stack
     and  r5,  r9,  r5    //Exec t15 = y8 & y10; into r5
     eor  r2,  r5,  r2    //Exec t16 = t15 ^ t12; into r2
     eor  r5,  r6,  r0    //Exec y16 = t0 ^ y11; into r5
-    str  r0, [sp, #-36]  //Store r0/y11 on stack
+    str.w r0, [sp, #12]   //Store r0/y11 on stack
     eor  r0,  r3,  r5    //Exec y21 = y13 ^ y16; into r0
-    str  r3, [sp, #-40]  //Store r3/y13 on stack
+    str  r3, [sp, #8]    //Store r3/y13 on stack
     and  r3,  r3,  r5    //Exec t7 = y13 & y16; into r3
-    str  r5, [sp, #-44]  //Store r5/y16 on stack
-    str r11, [sp, #-48]  //Store r11/U7 on stack
+    str  r5, [sp, #4]    //Store r5/y16 on stack
+    str r11, [sp, #0]    //Store r11/U7 on stack
     eor  r5,  r4,  r5    //Exec y18 = U0 ^ y16; into r5
     eor  r6,  r6, r11    //Exec y1 = t0 ^ U7; into r6
     eor  r7,  r6,  r7    //Exec y4 = y1 ^ U3; into r7
@@ -2055,11 +2058,11 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r3,  r3,  r1    //Exec t19 = t9 ^ t14; into r3
     eor  r3,  r3,  r0    //Exec t23 = t19 ^ y21; into r3
     eor  r0, r10,  r9    //Exec y3 = y5 ^ y8; into r0
-    ldr r11, [sp, #-16]  //Load y6 into r11
+    ldr r11, [sp, #32]   //Load y6 into r11
     and  r5,  r0, r11    //Exec t3 = y3 & y6; into r5
     eor r12,  r5, r12    //Exec t4 = t3 ^ t2; into r12
-    ldr  r5, [sp, #-8 ]  //Load y20 into r5
-    str  r7, [sp, #-16]  //Store r7/y4 on stack
+    ldr  r5, [sp, #40]   //Load y20 into r5
+    str  r7, [sp, #32]   //Store r7/y4 on stack
     eor r12, r12,  r5    //Exec t17 = t4 ^ y20; into r12
     eor  r1, r12,  r1    //Exec t21 = t17 ^ t14; into r1
     and r12,  r1,  r3    //Exec t26 = t21 & t23; into r12
@@ -2079,11 +2082,11 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     and  r5, r14,  r5    //Exec t39 = t29 & t38; into r5
     eor  r1,  r1,  r5    //Exec t40 = t25 ^ t39; into r1
     eor  r5, r14,  r1    //Exec t43 = t29 ^ t40; into r5
-    ldr  r7, [sp, #-44]  //Load y16 into r7
+    ldr.w r7, [sp, #4]    //Load y16 into r7
     and  r7,  r5,  r7    //Exec z3 = t43 & y16; into r7
     eor  r8,  r7,  r8    //Exec tc12 = z3 ^ z5; into r8
-    str  r8, [sp, #-8 ]  //Store r8/tc12 on stack
-    ldr  r8, [sp, #-40]  //Load y13 into r8
+    str  r8, [sp, #40]   //Store r8/tc12 on stack
+    ldr  r8, [sp, #8]    //Load y13 into r8
     and  r8,  r5,  r8    //Exec z12 = t43 & y13; into r8
     and r10,  r1, r10    //Exec z13 = t40 & y5; into r10
     and  r6,  r1,  r6    //Exec z4 = t40 & y1; into r6
@@ -2091,31 +2094,31 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r3,  r3, r12    //Exec t34 = t23 ^ t33; into r3
     eor  r3,  r2,  r3    //Exec t37 = t36 ^ t34; into r3
     eor  r1,  r1,  r3    //Exec t41 = t40 ^ t37; into r1
-    ldr  r5, [sp, #-32]  //Load y10 into r5
+    ldr.w r5, [sp, #16]   //Load y10 into r5
     and  r2,  r1,  r5    //Exec z8 = t41 & y10; into r2
     and  r9,  r1,  r9    //Exec z17 = t41 & y8; into r9
-    str  r9, [sp, #-32]  //Store r9/z17 on stack
+    str  r9, [sp, #16]   //Store r9/z17 on stack
     eor  r5, r12,  r3    //Exec t44 = t33 ^ t37; into r5
-    ldr  r7, [sp, #-20]  //Load y15 into r7
-    ldr  r9, [sp, #-4 ]  //Load y12 into r9
+    ldr.w r7, [sp, #28]   //Load y15 into r7
+    ldr  r9, [sp, #44]   //Load y12 into r9
     and  r7,  r5,  r7    //Exec z0 = t44 & y15; into r7
     and  r9,  r5,  r9    //Exec z9 = t44 & y12; into r9
     and  r0,  r3,  r0    //Exec z10 = t37 & y3; into r0
     and  r3,  r3, r11    //Exec z1 = t37 & y6; into r3
     eor  r3,  r3,  r7    //Exec tc5 = z1 ^ z0; into r3
     eor  r3,  r6,  r3    //Exec tc11 = tc6 ^ tc5; into r3
-    ldr r11, [sp, #-16]  //Load y4 into r11
-    ldr  r5, [sp, #-28]  //Load y17 into r5
+    ldr r11, [sp, #32]   //Load y4 into r11
+    ldr.w r5, [sp, #20]   //Load y17 into r5
     and r11, r12, r11    //Exec z11 = t33 & y4; into r11
     eor r14, r14, r12    //Exec t42 = t29 ^ t33; into r14
     eor  r1, r14,  r1    //Exec t45 = t42 ^ t41; into r1
     and  r5,  r1,  r5    //Exec z7 = t45 & y17; into r5
     eor  r6,  r5,  r6    //Exec tc8 = z7 ^ tc6; into r6
-    ldr  r5, [sp, #-24]  //Load y14 into r5
-    str  r4, [sp, #-16]  //Store r4/z14 on stack
+    ldr.w r5, [sp, #24]   //Load y14 into r5
+    str.w r4, [sp, #32]   //Store r4/z14 on stack
     and  r1,  r1,  r5    //Exec z16 = t45 & y14; into r1
-    ldr  r5, [sp, #-36]  //Load y11 into r5
-    ldr  r4, [sp, #-12]  //Load y9 into r4
+    ldr  r5, [sp, #12]   //Load y11 into r5
+    ldr  r4, [sp, #36]   //Load y9 into r4
     and  r5, r14,  r5    //Exec z6 = t42 & y11; into r5
     eor  r5,  r5,  r6    //Exec tc16 = z6 ^ tc8; into r5
     and  r4, r14,  r4    //Exec z15 = t42 & y9; into r4
@@ -2128,18 +2131,18 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r9,  r9,  r3    //Exec S3 = tc3 ^ tc11; into r9
     eor  r3,  r9,  r5    //Exec S1 = S3 ^ tc16 ^ 1; into r3
     eor r11, r10,  r4    //Exec tc13 = z13 ^ tc1; into r11
-    ldr  r4, [sp, #-48]  //Load U7 into r4
+    ldr.w r4, [sp, #0]    //Load U7 into r4
     and r12, r12,  r4    //Exec z2 = t33 & U7; into r12
     eor  r7,  r7, r12    //Exec tc4 = z0 ^ z2; into r7
     eor r12,  r8,  r7    //Exec tc7 = z12 ^ tc4; into r12
     eor  r2,  r2, r12    //Exec tc9 = z8 ^ tc7; into r2
     eor  r2,  r6,  r2    //Exec tc10 = tc8 ^ tc9; into r2
-    ldr  r4, [sp, #-16]  //Load z14 into r4
+    ldr.w r4, [sp, #32]   //Load z14 into r4
     eor r12,  r4,  r2    //Exec tc17 = z14 ^ tc10; into r12
     eor  r0,  r0, r12    //Exec S5 = tc21 ^ tc17; into r0
     eor  r6, r12, r14    //Exec tc26 = tc17 ^ tc20; into r6
-    ldr  r4, [sp, #-32]  //Load z17 into r4
-    ldr r12, [sp, #-8 ]  //Load tc12 into r12
+    ldr.w r4, [sp, #16]   //Load z17 into r4
+    ldr r12, [sp, #40]   //Load tc12 into r12
     eor  r6,  r6,  r4    //Exec S2 = tc26 ^ z17 ^ 1; into r6
     eor r12,  r7, r12    //Exec tc14 = tc4 ^ tc12; into r12
     eor r14, r11, r12    //Exec tc18 = tc13 ^ tc14; into r14
@@ -2301,7 +2304,7 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor r8, r3, r8, ror #8
     eor r7, r12, r7, ror #8
     eor r11, r0, r11, ror #8
-    pop.w {r0} //for AddRoundKey, interleaving saves 10 cycles
+    ldr.w r0, [sp, #48] //for AddRoundKey, interleaving saves 10 cycles
     eor r10, r2, r10, ror #8
 
     //round 4
@@ -2317,7 +2320,7 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor r9, r2, r9, ror #8
     eor r10, r3, r10, ror #8
     eor r11, r12, r11, ror #8
-    push.w {r0} //must push, don't want to destroy original p.rk
+    str.w r0, [sp, #48] //must store, don't want to destroy original p.rk
 
     //SubBytes
     //Result of combining http://www.cs.yale.edu/homes/peralta/CircuitStuff/SLP_AES_113.txt with my custom instruction scheduler / register allocator
@@ -2330,34 +2333,34 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     and r12,  r2, r14    //Exec t2 = y12 & y15; into r12
     eor  r8, r14, r11    //Exec y6 = y15 ^ U7; into r8
     eor  r0,  r0,  r5    //Exec y20 = t1 ^ U1; into r0
-    str  r2, [sp, #-4 ]  //Store r2/y12 on stack
+    str.w r2, [sp, #44]   //Store r2/y12 on stack
     eor  r2,  r4,  r7    //Exec y9 = U0 ^ U3; into r2
-    str  r0, [sp, #-8 ]  //Store r0/y20 on stack
+    str  r0, [sp, #40]   //Store r0/y20 on stack
     eor  r0,  r0,  r2    //Exec y11 = y20 ^ y9; into r0
-    str  r2, [sp, #-12]  //Store r2/y9 on stack
+    str  r2, [sp, #36]   //Store r2/y9 on stack
     and  r2,  r2,  r0    //Exec t12 = y9 & y11; into r2
-    str  r8, [sp, #-16]  //Store r8/y6 on stack
+    str  r8, [sp, #32]   //Store r8/y6 on stack
     eor  r8, r11,  r0    //Exec y7 = U7 ^ y11; into r8
     eor  r9,  r4,  r9    //Exec y8 = U0 ^ U5; into r9
     eor  r6,  r5,  r6    //Exec t0 = U1 ^ U2; into r6
     eor  r5, r14,  r6    //Exec y10 = y15 ^ t0; into r5
-    str r14, [sp, #-20]  //Store r14/y15 on stack
+    str r14, [sp, #28]   //Store r14/y15 on stack
     eor r14,  r5,  r0    //Exec y17 = y10 ^ y11; into r14
-    str  r1, [sp, #-24]  //Store r1/y14 on stack
+    str.w r1, [sp, #24]   //Store r1/y14 on stack
     and  r1,  r1, r14    //Exec t13 = y14 & y17; into r1
     eor  r1,  r1,  r2    //Exec t14 = t13 ^ t12; into r1
-    str r14, [sp, #-28]  //Store r14/y17 on stack
+    str r14, [sp, #20]   //Store r14/y17 on stack
     eor r14,  r5,  r9    //Exec y19 = y10 ^ y8; into r14
-    str  r5, [sp, #-32]  //Store r5/y10 on stack
+    str.w r5, [sp, #16]   //Store r5/y10 on stack
     and  r5,  r9,  r5    //Exec t15 = y8 & y10; into r5
     eor  r2,  r5,  r2    //Exec t16 = t15 ^ t12; into r2
     eor  r5,  r6,  r0    //Exec y16 = t0 ^ y11; into r5
-    str  r0, [sp, #-36]  //Store r0/y11 on stack
+    str.w r0, [sp, #12]   //Store r0/y11 on stack
     eor  r0,  r3,  r5    //Exec y21 = y13 ^ y16; into r0
-    str  r3, [sp, #-40]  //Store r3/y13 on stack
+    str  r3, [sp, #8]    //Store r3/y13 on stack
     and  r3,  r3,  r5    //Exec t7 = y13 & y16; into r3
-    str  r5, [sp, #-44]  //Store r5/y16 on stack
-    str r11, [sp, #-48]  //Store r11/U7 on stack
+    str  r5, [sp, #4]    //Store r5/y16 on stack
+    str r11, [sp, #0]    //Store r11/U7 on stack
     eor  r5,  r4,  r5    //Exec y18 = U0 ^ y16; into r5
     eor  r6,  r6, r11    //Exec y1 = t0 ^ U7; into r6
     eor  r7,  r6,  r7    //Exec y4 = y1 ^ U3; into r7
@@ -2376,11 +2379,11 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r3,  r3,  r1    //Exec t19 = t9 ^ t14; into r3
     eor  r3,  r3,  r0    //Exec t23 = t19 ^ y21; into r3
     eor  r0, r10,  r9    //Exec y3 = y5 ^ y8; into r0
-    ldr r11, [sp, #-16]  //Load y6 into r11
+    ldr r11, [sp, #32]   //Load y6 into r11
     and  r5,  r0, r11    //Exec t3 = y3 & y6; into r5
     eor r12,  r5, r12    //Exec t4 = t3 ^ t2; into r12
-    ldr  r5, [sp, #-8 ]  //Load y20 into r5
-    str  r7, [sp, #-16]  //Store r7/y4 on stack
+    ldr  r5, [sp, #40]   //Load y20 into r5
+    str  r7, [sp, #32]   //Store r7/y4 on stack
     eor r12, r12,  r5    //Exec t17 = t4 ^ y20; into r12
     eor  r1, r12,  r1    //Exec t21 = t17 ^ t14; into r1
     and r12,  r1,  r3    //Exec t26 = t21 & t23; into r12
@@ -2400,11 +2403,11 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     and  r5, r14,  r5    //Exec t39 = t29 & t38; into r5
     eor  r1,  r1,  r5    //Exec t40 = t25 ^ t39; into r1
     eor  r5, r14,  r1    //Exec t43 = t29 ^ t40; into r5
-    ldr  r7, [sp, #-44]  //Load y16 into r7
+    ldr.w r7, [sp, #4]    //Load y16 into r7
     and  r7,  r5,  r7    //Exec z3 = t43 & y16; into r7
     eor  r8,  r7,  r8    //Exec tc12 = z3 ^ z5; into r8
-    str  r8, [sp, #-8 ]  //Store r8/tc12 on stack
-    ldr  r8, [sp, #-40]  //Load y13 into r8
+    str  r8, [sp, #40]   //Store r8/tc12 on stack
+    ldr  r8, [sp, #8]    //Load y13 into r8
     and  r8,  r5,  r8    //Exec z12 = t43 & y13; into r8
     and r10,  r1, r10    //Exec z13 = t40 & y5; into r10
     and  r6,  r1,  r6    //Exec z4 = t40 & y1; into r6
@@ -2412,31 +2415,31 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r3,  r3, r12    //Exec t34 = t23 ^ t33; into r3
     eor  r3,  r2,  r3    //Exec t37 = t36 ^ t34; into r3
     eor  r1,  r1,  r3    //Exec t41 = t40 ^ t37; into r1
-    ldr  r5, [sp, #-32]  //Load y10 into r5
+    ldr.w r5, [sp, #16]   //Load y10 into r5
     and  r2,  r1,  r5    //Exec z8 = t41 & y10; into r2
     and  r9,  r1,  r9    //Exec z17 = t41 & y8; into r9
-    str  r9, [sp, #-32]  //Store r9/z17 on stack
+    str  r9, [sp, #16]   //Store r9/z17 on stack
     eor  r5, r12,  r3    //Exec t44 = t33 ^ t37; into r5
-    ldr  r7, [sp, #-20]  //Load y15 into r7
-    ldr  r9, [sp, #-4 ]  //Load y12 into r9
+    ldr.w r7, [sp, #28]   //Load y15 into r7
+    ldr  r9, [sp, #44]   //Load y12 into r9
     and  r7,  r5,  r7    //Exec z0 = t44 & y15; into r7
     and  r9,  r5,  r9    //Exec z9 = t44 & y12; into r9
     and  r0,  r3,  r0    //Exec z10 = t37 & y3; into r0
     and  r3,  r3, r11    //Exec z1 = t37 & y6; into r3
     eor  r3,  r3,  r7    //Exec tc5 = z1 ^ z0; into r3
     eor  r3,  r6,  r3    //Exec tc11 = tc6 ^ tc5; into r3
-    ldr r11, [sp, #-16]  //Load y4 into r11
-    ldr  r5, [sp, #-28]  //Load y17 into r5
+    ldr r11, [sp, #32]   //Load y4 into r11
+    ldr.w r5, [sp, #20]   //Load y17 into r5
     and r11, r12, r11    //Exec z11 = t33 & y4; into r11
     eor r14, r14, r12    //Exec t42 = t29 ^ t33; into r14
     eor  r1, r14,  r1    //Exec t45 = t42 ^ t41; into r1
     and  r5,  r1,  r5    //Exec z7 = t45 & y17; into r5
     eor  r6,  r5,  r6    //Exec tc8 = z7 ^ tc6; into r6
-    ldr  r5, [sp, #-24]  //Load y14 into r5
-    str  r4, [sp, #-16]  //Store r4/z14 on stack
+    ldr.w r5, [sp, #24]   //Load y14 into r5
+    str.w r4, [sp, #32]   //Store r4/z14 on stack
     and  r1,  r1,  r5    //Exec z16 = t45 & y14; into r1
-    ldr  r5, [sp, #-36]  //Load y11 into r5
-    ldr  r4, [sp, #-12]  //Load y9 into r4
+    ldr  r5, [sp, #12]   //Load y11 into r5
+    ldr  r4, [sp, #36]   //Load y9 into r4
     and  r5, r14,  r5    //Exec z6 = t42 & y11; into r5
     eor  r5,  r5,  r6    //Exec tc16 = z6 ^ tc8; into r5
     and  r4, r14,  r4    //Exec z15 = t42 & y9; into r4
@@ -2449,18 +2452,18 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r9,  r9,  r3    //Exec S3 = tc3 ^ tc11; into r9
     eor  r3,  r9,  r5    //Exec S1 = S3 ^ tc16 ^ 1; into r3
     eor r11, r10,  r4    //Exec tc13 = z13 ^ tc1; into r11
-    ldr  r4, [sp, #-48]  //Load U7 into r4
+    ldr.w r4, [sp, #0]    //Load U7 into r4
     and r12, r12,  r4    //Exec z2 = t33 & U7; into r12
     eor  r7,  r7, r12    //Exec tc4 = z0 ^ z2; into r7
     eor r12,  r8,  r7    //Exec tc7 = z12 ^ tc4; into r12
     eor  r2,  r2, r12    //Exec tc9 = z8 ^ tc7; into r2
     eor  r2,  r6,  r2    //Exec tc10 = tc8 ^ tc9; into r2
-    ldr  r4, [sp, #-16]  //Load z14 into r4
+    ldr.w r4, [sp, #32]   //Load z14 into r4
     eor r12,  r4,  r2    //Exec tc17 = z14 ^ tc10; into r12
     eor  r0,  r0, r12    //Exec S5 = tc21 ^ tc17; into r0
     eor  r6, r12, r14    //Exec tc26 = tc17 ^ tc20; into r6
-    ldr  r4, [sp, #-32]  //Load z17 into r4
-    ldr r12, [sp, #-8 ]  //Load tc12 into r12
+    ldr.w r4, [sp, #16]   //Load z17 into r4
+    ldr r12, [sp, #40]   //Load tc12 into r12
     eor  r6,  r6,  r4    //Exec S2 = tc26 ^ z17 ^ 1; into r6
     eor r12,  r7, r12    //Exec tc14 = tc4 ^ tc12; into r12
     eor r14, r11, r12    //Exec tc18 = tc13 ^ tc14; into r14
@@ -2622,7 +2625,7 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor r8, r3, r8, ror #8
     eor r7, r12, r7, ror #8
     eor r11, r0, r11, ror #8
-    pop.w {r0} //for AddRoundKey, interleaving saves 10 cycles
+    ldr.w r0, [sp, #48] //for AddRoundKey, interleaving saves 10 cycles
     eor r10, r2, r10, ror #8
 
     //round 5
@@ -2638,7 +2641,7 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor r9, r2, r9, ror #8
     eor r10, r3, r10, ror #8
     eor r11, r12, r11, ror #8
-    push.w {r0} //must push, don't want to destroy original p.rk
+    str.w r0, [sp, #48] //must store, don't want to destroy original p.rk
 
     //SubBytes
     //Result of combining http://www.cs.yale.edu/homes/peralta/CircuitStuff/SLP_AES_113.txt with my custom instruction scheduler / register allocator
@@ -2651,34 +2654,34 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     and r12,  r2, r14    //Exec t2 = y12 & y15; into r12
     eor  r8, r14, r11    //Exec y6 = y15 ^ U7; into r8
     eor  r0,  r0,  r5    //Exec y20 = t1 ^ U1; into r0
-    str  r2, [sp, #-4 ]  //Store r2/y12 on stack
+    str.w r2, [sp, #44]   //Store r2/y12 on stack
     eor  r2,  r4,  r7    //Exec y9 = U0 ^ U3; into r2
-    str  r0, [sp, #-8 ]  //Store r0/y20 on stack
+    str  r0, [sp, #40]   //Store r0/y20 on stack
     eor  r0,  r0,  r2    //Exec y11 = y20 ^ y9; into r0
-    str  r2, [sp, #-12]  //Store r2/y9 on stack
+    str  r2, [sp, #36]   //Store r2/y9 on stack
     and  r2,  r2,  r0    //Exec t12 = y9 & y11; into r2
-    str  r8, [sp, #-16]  //Store r8/y6 on stack
+    str  r8, [sp, #32]   //Store r8/y6 on stack
     eor  r8, r11,  r0    //Exec y7 = U7 ^ y11; into r8
     eor  r9,  r4,  r9    //Exec y8 = U0 ^ U5; into r9
     eor  r6,  r5,  r6    //Exec t0 = U1 ^ U2; into r6
     eor  r5, r14,  r6    //Exec y10 = y15 ^ t0; into r5
-    str r14, [sp, #-20]  //Store r14/y15 on stack
+    str r14, [sp, #28]   //Store r14/y15 on stack
     eor r14,  r5,  r0    //Exec y17 = y10 ^ y11; into r14
-    str  r1, [sp, #-24]  //Store r1/y14 on stack
+    str.w r1, [sp, #24]   //Store r1/y14 on stack
     and  r1,  r1, r14    //Exec t13 = y14 & y17; into r1
     eor  r1,  r1,  r2    //Exec t14 = t13 ^ t12; into r1
-    str r14, [sp, #-28]  //Store r14/y17 on stack
+    str r14, [sp, #20]   //Store r14/y17 on stack
     eor r14,  r5,  r9    //Exec y19 = y10 ^ y8; into r14
-    str  r5, [sp, #-32]  //Store r5/y10 on stack
+    str.w r5, [sp, #16]   //Store r5/y10 on stack
     and  r5,  r9,  r5    //Exec t15 = y8 & y10; into r5
     eor  r2,  r5,  r2    //Exec t16 = t15 ^ t12; into r2
     eor  r5,  r6,  r0    //Exec y16 = t0 ^ y11; into r5
-    str  r0, [sp, #-36]  //Store r0/y11 on stack
+    str.w r0, [sp, #12]   //Store r0/y11 on stack
     eor  r0,  r3,  r5    //Exec y21 = y13 ^ y16; into r0
-    str  r3, [sp, #-40]  //Store r3/y13 on stack
+    str  r3, [sp, #8]    //Store r3/y13 on stack
     and  r3,  r3,  r5    //Exec t7 = y13 & y16; into r3
-    str  r5, [sp, #-44]  //Store r5/y16 on stack
-    str r11, [sp, #-48]  //Store r11/U7 on stack
+    str  r5, [sp, #4]    //Store r5/y16 on stack
+    str r11, [sp, #0]    //Store r11/U7 on stack
     eor  r5,  r4,  r5    //Exec y18 = U0 ^ y16; into r5
     eor  r6,  r6, r11    //Exec y1 = t0 ^ U7; into r6
     eor  r7,  r6,  r7    //Exec y4 = y1 ^ U3; into r7
@@ -2697,11 +2700,11 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r3,  r3,  r1    //Exec t19 = t9 ^ t14; into r3
     eor  r3,  r3,  r0    //Exec t23 = t19 ^ y21; into r3
     eor  r0, r10,  r9    //Exec y3 = y5 ^ y8; into r0
-    ldr r11, [sp, #-16]  //Load y6 into r11
+    ldr r11, [sp, #32]   //Load y6 into r11
     and  r5,  r0, r11    //Exec t3 = y3 & y6; into r5
     eor r12,  r5, r12    //Exec t4 = t3 ^ t2; into r12
-    ldr  r5, [sp, #-8 ]  //Load y20 into r5
-    str  r7, [sp, #-16]  //Store r7/y4 on stack
+    ldr  r5, [sp, #40]   //Load y20 into r5
+    str  r7, [sp, #32]   //Store r7/y4 on stack
     eor r12, r12,  r5    //Exec t17 = t4 ^ y20; into r12
     eor  r1, r12,  r1    //Exec t21 = t17 ^ t14; into r1
     and r12,  r1,  r3    //Exec t26 = t21 & t23; into r12
@@ -2721,11 +2724,11 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     and  r5, r14,  r5    //Exec t39 = t29 & t38; into r5
     eor  r1,  r1,  r5    //Exec t40 = t25 ^ t39; into r1
     eor  r5, r14,  r1    //Exec t43 = t29 ^ t40; into r5
-    ldr  r7, [sp, #-44]  //Load y16 into r7
+    ldr.w r7, [sp, #4]    //Load y16 into r7
     and  r7,  r5,  r7    //Exec z3 = t43 & y16; into r7
     eor  r8,  r7,  r8    //Exec tc12 = z3 ^ z5; into r8
-    str  r8, [sp, #-8 ]  //Store r8/tc12 on stack
-    ldr  r8, [sp, #-40]  //Load y13 into r8
+    str  r8, [sp, #40]   //Store r8/tc12 on stack
+    ldr  r8, [sp, #8]    //Load y13 into r8
     and  r8,  r5,  r8    //Exec z12 = t43 & y13; into r8
     and r10,  r1, r10    //Exec z13 = t40 & y5; into r10
     and  r6,  r1,  r6    //Exec z4 = t40 & y1; into r6
@@ -2733,31 +2736,31 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r3,  r3, r12    //Exec t34 = t23 ^ t33; into r3
     eor  r3,  r2,  r3    //Exec t37 = t36 ^ t34; into r3
     eor  r1,  r1,  r3    //Exec t41 = t40 ^ t37; into r1
-    ldr  r5, [sp, #-32]  //Load y10 into r5
+    ldr.w r5, [sp, #16]   //Load y10 into r5
     and  r2,  r1,  r5    //Exec z8 = t41 & y10; into r2
     and  r9,  r1,  r9    //Exec z17 = t41 & y8; into r9
-    str  r9, [sp, #-32]  //Store r9/z17 on stack
+    str  r9, [sp, #16]   //Store r9/z17 on stack
     eor  r5, r12,  r3    //Exec t44 = t33 ^ t37; into r5
-    ldr  r7, [sp, #-20]  //Load y15 into r7
-    ldr  r9, [sp, #-4 ]  //Load y12 into r9
+    ldr.w r7, [sp, #28]   //Load y15 into r7
+    ldr  r9, [sp, #44]   //Load y12 into r9
     and  r7,  r5,  r7    //Exec z0 = t44 & y15; into r7
     and  r9,  r5,  r9    //Exec z9 = t44 & y12; into r9
     and  r0,  r3,  r0    //Exec z10 = t37 & y3; into r0
     and  r3,  r3, r11    //Exec z1 = t37 & y6; into r3
     eor  r3,  r3,  r7    //Exec tc5 = z1 ^ z0; into r3
     eor  r3,  r6,  r3    //Exec tc11 = tc6 ^ tc5; into r3
-    ldr r11, [sp, #-16]  //Load y4 into r11
-    ldr  r5, [sp, #-28]  //Load y17 into r5
+    ldr r11, [sp, #32]   //Load y4 into r11
+    ldr.w r5, [sp, #20]   //Load y17 into r5
     and r11, r12, r11    //Exec z11 = t33 & y4; into r11
     eor r14, r14, r12    //Exec t42 = t29 ^ t33; into r14
     eor  r1, r14,  r1    //Exec t45 = t42 ^ t41; into r1
     and  r5,  r1,  r5    //Exec z7 = t45 & y17; into r5
     eor  r6,  r5,  r6    //Exec tc8 = z7 ^ tc6; into r6
-    ldr  r5, [sp, #-24]  //Load y14 into r5
-    str  r4, [sp, #-16]  //Store r4/z14 on stack
+    ldr.w r5, [sp, #24]   //Load y14 into r5
+    str.w r4, [sp, #32]   //Store r4/z14 on stack
     and  r1,  r1,  r5    //Exec z16 = t45 & y14; into r1
-    ldr  r5, [sp, #-36]  //Load y11 into r5
-    ldr  r4, [sp, #-12]  //Load y9 into r4
+    ldr  r5, [sp, #12]   //Load y11 into r5
+    ldr  r4, [sp, #36]   //Load y9 into r4
     and  r5, r14,  r5    //Exec z6 = t42 & y11; into r5
     eor  r5,  r5,  r6    //Exec tc16 = z6 ^ tc8; into r5
     and  r4, r14,  r4    //Exec z15 = t42 & y9; into r4
@@ -2770,18 +2773,18 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r9,  r9,  r3    //Exec S3 = tc3 ^ tc11; into r9
     eor  r3,  r9,  r5    //Exec S1 = S3 ^ tc16 ^ 1; into r3
     eor r11, r10,  r4    //Exec tc13 = z13 ^ tc1; into r11
-    ldr  r4, [sp, #-48]  //Load U7 into r4
+    ldr.w r4, [sp, #0]    //Load U7 into r4
     and r12, r12,  r4    //Exec z2 = t33 & U7; into r12
     eor  r7,  r7, r12    //Exec tc4 = z0 ^ z2; into r7
     eor r12,  r8,  r7    //Exec tc7 = z12 ^ tc4; into r12
     eor  r2,  r2, r12    //Exec tc9 = z8 ^ tc7; into r2
     eor  r2,  r6,  r2    //Exec tc10 = tc8 ^ tc9; into r2
-    ldr  r4, [sp, #-16]  //Load z14 into r4
+    ldr.w r4, [sp, #32]   //Load z14 into r4
     eor r12,  r4,  r2    //Exec tc17 = z14 ^ tc10; into r12
     eor  r0,  r0, r12    //Exec S5 = tc21 ^ tc17; into r0
     eor  r6, r12, r14    //Exec tc26 = tc17 ^ tc20; into r6
-    ldr  r4, [sp, #-32]  //Load z17 into r4
-    ldr r12, [sp, #-8 ]  //Load tc12 into r12
+    ldr.w r4, [sp, #16]   //Load z17 into r4
+    ldr r12, [sp, #40]   //Load tc12 into r12
     eor  r6,  r6,  r4    //Exec S2 = tc26 ^ z17 ^ 1; into r6
     eor r12,  r7, r12    //Exec tc14 = tc4 ^ tc12; into r12
     eor r14, r11, r12    //Exec tc18 = tc13 ^ tc14; into r14
@@ -2943,7 +2946,7 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor r8, r3, r8, ror #8
     eor r7, r12, r7, ror #8
     eor r11, r0, r11, ror #8
-    pop.w {r0} //for AddRoundKey, interleaving saves 10 cycles
+    ldr.w r0, [sp, #48] //for AddRoundKey, interleaving saves 10 cycles
     eor r10, r2, r10, ror #8
 
     //round 6
@@ -2959,7 +2962,7 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor r9, r2, r9, ror #8
     eor r10, r3, r10, ror #8
     eor r11, r12, r11, ror #8
-    push.w {r0} //must push, don't want to destroy original p.rk
+    str.w r0, [sp, #48] //must store, don't want to destroy original p.rk
 
     //SubBytes
     //Result of combining http://www.cs.yale.edu/homes/peralta/CircuitStuff/SLP_AES_113.txt with my custom instruction scheduler / register allocator
@@ -2972,34 +2975,34 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     and r12,  r2, r14    //Exec t2 = y12 & y15; into r12
     eor  r8, r14, r11    //Exec y6 = y15 ^ U7; into r8
     eor  r0,  r0,  r5    //Exec y20 = t1 ^ U1; into r0
-    str  r2, [sp, #-4 ]  //Store r2/y12 on stack
+    str.w r2, [sp, #44]   //Store r2/y12 on stack
     eor  r2,  r4,  r7    //Exec y9 = U0 ^ U3; into r2
-    str  r0, [sp, #-8 ]  //Store r0/y20 on stack
+    str  r0, [sp, #40]   //Store r0/y20 on stack
     eor  r0,  r0,  r2    //Exec y11 = y20 ^ y9; into r0
-    str  r2, [sp, #-12]  //Store r2/y9 on stack
+    str  r2, [sp, #36]   //Store r2/y9 on stack
     and  r2,  r2,  r0    //Exec t12 = y9 & y11; into r2
-    str  r8, [sp, #-16]  //Store r8/y6 on stack
+    str  r8, [sp, #32]   //Store r8/y6 on stack
     eor  r8, r11,  r0    //Exec y7 = U7 ^ y11; into r8
     eor  r9,  r4,  r9    //Exec y8 = U0 ^ U5; into r9
     eor  r6,  r5,  r6    //Exec t0 = U1 ^ U2; into r6
     eor  r5, r14,  r6    //Exec y10 = y15 ^ t0; into r5
-    str r14, [sp, #-20]  //Store r14/y15 on stack
+    str r14, [sp, #28]   //Store r14/y15 on stack
     eor r14,  r5,  r0    //Exec y17 = y10 ^ y11; into r14
-    str  r1, [sp, #-24]  //Store r1/y14 on stack
+    str.w r1, [sp, #24]   //Store r1/y14 on stack
     and  r1,  r1, r14    //Exec t13 = y14 & y17; into r1
     eor  r1,  r1,  r2    //Exec t14 = t13 ^ t12; into r1
-    str r14, [sp, #-28]  //Store r14/y17 on stack
+    str r14, [sp, #20]   //Store r14/y17 on stack
     eor r14,  r5,  r9    //Exec y19 = y10 ^ y8; into r14
-    str  r5, [sp, #-32]  //Store r5/y10 on stack
+    str.w r5, [sp, #16]   //Store r5/y10 on stack
     and  r5,  r9,  r5    //Exec t15 = y8 & y10; into r5
     eor  r2,  r5,  r2    //Exec t16 = t15 ^ t12; into r2
     eor  r5,  r6,  r0    //Exec y16 = t0 ^ y11; into r5
-    str  r0, [sp, #-36]  //Store r0/y11 on stack
+    str.w r0, [sp, #12]   //Store r0/y11 on stack
     eor  r0,  r3,  r5    //Exec y21 = y13 ^ y16; into r0
-    str  r3, [sp, #-40]  //Store r3/y13 on stack
+    str  r3, [sp, #8]    //Store r3/y13 on stack
     and  r3,  r3,  r5    //Exec t7 = y13 & y16; into r3
-    str  r5, [sp, #-44]  //Store r5/y16 on stack
-    str r11, [sp, #-48]  //Store r11/U7 on stack
+    str  r5, [sp, #4]    //Store r5/y16 on stack
+    str r11, [sp, #0]    //Store r11/U7 on stack
     eor  r5,  r4,  r5    //Exec y18 = U0 ^ y16; into r5
     eor  r6,  r6, r11    //Exec y1 = t0 ^ U7; into r6
     eor  r7,  r6,  r7    //Exec y4 = y1 ^ U3; into r7
@@ -3018,11 +3021,11 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r3,  r3,  r1    //Exec t19 = t9 ^ t14; into r3
     eor  r3,  r3,  r0    //Exec t23 = t19 ^ y21; into r3
     eor  r0, r10,  r9    //Exec y3 = y5 ^ y8; into r0
-    ldr r11, [sp, #-16]  //Load y6 into r11
+    ldr r11, [sp, #32]   //Load y6 into r11
     and  r5,  r0, r11    //Exec t3 = y3 & y6; into r5
     eor r12,  r5, r12    //Exec t4 = t3 ^ t2; into r12
-    ldr  r5, [sp, #-8 ]  //Load y20 into r5
-    str  r7, [sp, #-16]  //Store r7/y4 on stack
+    ldr  r5, [sp, #40]   //Load y20 into r5
+    str  r7, [sp, #32]   //Store r7/y4 on stack
     eor r12, r12,  r5    //Exec t17 = t4 ^ y20; into r12
     eor  r1, r12,  r1    //Exec t21 = t17 ^ t14; into r1
     and r12,  r1,  r3    //Exec t26 = t21 & t23; into r12
@@ -3042,11 +3045,11 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     and  r5, r14,  r5    //Exec t39 = t29 & t38; into r5
     eor  r1,  r1,  r5    //Exec t40 = t25 ^ t39; into r1
     eor  r5, r14,  r1    //Exec t43 = t29 ^ t40; into r5
-    ldr  r7, [sp, #-44]  //Load y16 into r7
+    ldr.w r7, [sp, #4]    //Load y16 into r7
     and  r7,  r5,  r7    //Exec z3 = t43 & y16; into r7
     eor  r8,  r7,  r8    //Exec tc12 = z3 ^ z5; into r8
-    str  r8, [sp, #-8 ]  //Store r8/tc12 on stack
-    ldr  r8, [sp, #-40]  //Load y13 into r8
+    str  r8, [sp, #40]   //Store r8/tc12 on stack
+    ldr  r8, [sp, #8]    //Load y13 into r8
     and  r8,  r5,  r8    //Exec z12 = t43 & y13; into r8
     and r10,  r1, r10    //Exec z13 = t40 & y5; into r10
     and  r6,  r1,  r6    //Exec z4 = t40 & y1; into r6
@@ -3054,31 +3057,31 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r3,  r3, r12    //Exec t34 = t23 ^ t33; into r3
     eor  r3,  r2,  r3    //Exec t37 = t36 ^ t34; into r3
     eor  r1,  r1,  r3    //Exec t41 = t40 ^ t37; into r1
-    ldr  r5, [sp, #-32]  //Load y10 into r5
+    ldr.w r5, [sp, #16]   //Load y10 into r5
     and  r2,  r1,  r5    //Exec z8 = t41 & y10; into r2
     and  r9,  r1,  r9    //Exec z17 = t41 & y8; into r9
-    str  r9, [sp, #-32]  //Store r9/z17 on stack
+    str  r9, [sp, #16]   //Store r9/z17 on stack
     eor  r5, r12,  r3    //Exec t44 = t33 ^ t37; into r5
-    ldr  r7, [sp, #-20]  //Load y15 into r7
-    ldr  r9, [sp, #-4 ]  //Load y12 into r9
+    ldr.w r7, [sp, #28]   //Load y15 into r7
+    ldr  r9, [sp, #44]   //Load y12 into r9
     and  r7,  r5,  r7    //Exec z0 = t44 & y15; into r7
     and  r9,  r5,  r9    //Exec z9 = t44 & y12; into r9
     and  r0,  r3,  r0    //Exec z10 = t37 & y3; into r0
     and  r3,  r3, r11    //Exec z1 = t37 & y6; into r3
     eor  r3,  r3,  r7    //Exec tc5 = z1 ^ z0; into r3
     eor  r3,  r6,  r3    //Exec tc11 = tc6 ^ tc5; into r3
-    ldr r11, [sp, #-16]  //Load y4 into r11
-    ldr  r5, [sp, #-28]  //Load y17 into r5
+    ldr r11, [sp, #32]   //Load y4 into r11
+    ldr.w r5, [sp, #20]   //Load y17 into r5
     and r11, r12, r11    //Exec z11 = t33 & y4; into r11
     eor r14, r14, r12    //Exec t42 = t29 ^ t33; into r14
     eor  r1, r14,  r1    //Exec t45 = t42 ^ t41; into r1
     and  r5,  r1,  r5    //Exec z7 = t45 & y17; into r5
     eor  r6,  r5,  r6    //Exec tc8 = z7 ^ tc6; into r6
-    ldr  r5, [sp, #-24]  //Load y14 into r5
-    str  r4, [sp, #-16]  //Store r4/z14 on stack
+    ldr.w r5, [sp, #24]   //Load y14 into r5
+    str.w r4, [sp, #32]   //Store r4/z14 on stack
     and  r1,  r1,  r5    //Exec z16 = t45 & y14; into r1
-    ldr  r5, [sp, #-36]  //Load y11 into r5
-    ldr  r4, [sp, #-12]  //Load y9 into r4
+    ldr  r5, [sp, #12]   //Load y11 into r5
+    ldr  r4, [sp, #36]   //Load y9 into r4
     and  r5, r14,  r5    //Exec z6 = t42 & y11; into r5
     eor  r5,  r5,  r6    //Exec tc16 = z6 ^ tc8; into r5
     and  r4, r14,  r4    //Exec z15 = t42 & y9; into r4
@@ -3091,18 +3094,18 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r9,  r9,  r3    //Exec S3 = tc3 ^ tc11; into r9
     eor  r3,  r9,  r5    //Exec S1 = S3 ^ tc16 ^ 1; into r3
     eor r11, r10,  r4    //Exec tc13 = z13 ^ tc1; into r11
-    ldr  r4, [sp, #-48]  //Load U7 into r4
+    ldr.w r4, [sp, #0]    //Load U7 into r4
     and r12, r12,  r4    //Exec z2 = t33 & U7; into r12
     eor  r7,  r7, r12    //Exec tc4 = z0 ^ z2; into r7
     eor r12,  r8,  r7    //Exec tc7 = z12 ^ tc4; into r12
     eor  r2,  r2, r12    //Exec tc9 = z8 ^ tc7; into r2
     eor  r2,  r6,  r2    //Exec tc10 = tc8 ^ tc9; into r2
-    ldr  r4, [sp, #-16]  //Load z14 into r4
+    ldr.w r4, [sp, #32]   //Load z14 into r4
     eor r12,  r4,  r2    //Exec tc17 = z14 ^ tc10; into r12
     eor  r0,  r0, r12    //Exec S5 = tc21 ^ tc17; into r0
     eor  r6, r12, r14    //Exec tc26 = tc17 ^ tc20; into r6
-    ldr  r4, [sp, #-32]  //Load z17 into r4
-    ldr r12, [sp, #-8 ]  //Load tc12 into r12
+    ldr.w r4, [sp, #16]   //Load z17 into r4
+    ldr r12, [sp, #40]   //Load tc12 into r12
     eor  r6,  r6,  r4    //Exec S2 = tc26 ^ z17 ^ 1; into r6
     eor r12,  r7, r12    //Exec tc14 = tc4 ^ tc12; into r12
     eor r14, r11, r12    //Exec tc18 = tc13 ^ tc14; into r14
@@ -3264,7 +3267,7 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor r8, r3, r8, ror #8
     eor r7, r12, r7, ror #8
     eor r11, r0, r11, ror #8
-    pop.w {r0} //for AddRoundKey, interleaving saves 10 cycles
+    ldr.w r0, [sp, #48] //for AddRoundKey, interleaving saves 10 cycles
     eor r10, r2, r10, ror #8
 
     //round 7
@@ -3280,7 +3283,7 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor r9, r2, r9, ror #8
     eor r10, r3, r10, ror #8
     eor r11, r12, r11, ror #8
-    push.w {r0} //must push, don't want to destroy original p.rk
+    str.w r0, [sp, #48] //must store, don't want to destroy original p.rk
 
     //SubBytes
     //Result of combining http://www.cs.yale.edu/homes/peralta/CircuitStuff/SLP_AES_113.txt with my custom instruction scheduler / register allocator
@@ -3293,34 +3296,34 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     and r12,  r2, r14    //Exec t2 = y12 & y15; into r12
     eor  r8, r14, r11    //Exec y6 = y15 ^ U7; into r8
     eor  r0,  r0,  r5    //Exec y20 = t1 ^ U1; into r0
-    str  r2, [sp, #-4 ]  //Store r2/y12 on stack
+    str.w r2, [sp, #44]   //Store r2/y12 on stack
     eor  r2,  r4,  r7    //Exec y9 = U0 ^ U3; into r2
-    str  r0, [sp, #-8 ]  //Store r0/y20 on stack
+    str  r0, [sp, #40]   //Store r0/y20 on stack
     eor  r0,  r0,  r2    //Exec y11 = y20 ^ y9; into r0
-    str  r2, [sp, #-12]  //Store r2/y9 on stack
+    str  r2, [sp, #36]   //Store r2/y9 on stack
     and  r2,  r2,  r0    //Exec t12 = y9 & y11; into r2
-    str  r8, [sp, #-16]  //Store r8/y6 on stack
+    str  r8, [sp, #32]   //Store r8/y6 on stack
     eor  r8, r11,  r0    //Exec y7 = U7 ^ y11; into r8
     eor  r9,  r4,  r9    //Exec y8 = U0 ^ U5; into r9
     eor  r6,  r5,  r6    //Exec t0 = U1 ^ U2; into r6
     eor  r5, r14,  r6    //Exec y10 = y15 ^ t0; into r5
-    str r14, [sp, #-20]  //Store r14/y15 on stack
+    str r14, [sp, #28]   //Store r14/y15 on stack
     eor r14,  r5,  r0    //Exec y17 = y10 ^ y11; into r14
-    str  r1, [sp, #-24]  //Store r1/y14 on stack
+    str.w r1, [sp, #24]   //Store r1/y14 on stack
     and  r1,  r1, r14    //Exec t13 = y14 & y17; into r1
     eor  r1,  r1,  r2    //Exec t14 = t13 ^ t12; into r1
-    str r14, [sp, #-28]  //Store r14/y17 on stack
+    str r14, [sp, #20]   //Store r14/y17 on stack
     eor r14,  r5,  r9    //Exec y19 = y10 ^ y8; into r14
-    str  r5, [sp, #-32]  //Store r5/y10 on stack
+    str.w r5, [sp, #16]   //Store r5/y10 on stack
     and  r5,  r9,  r5    //Exec t15 = y8 & y10; into r5
     eor  r2,  r5,  r2    //Exec t16 = t15 ^ t12; into r2
     eor  r5,  r6,  r0    //Exec y16 = t0 ^ y11; into r5
-    str  r0, [sp, #-36]  //Store r0/y11 on stack
+    str.w r0, [sp, #12]   //Store r0/y11 on stack
     eor  r0,  r3,  r5    //Exec y21 = y13 ^ y16; into r0
-    str  r3, [sp, #-40]  //Store r3/y13 on stack
+    str  r3, [sp, #8]    //Store r3/y13 on stack
     and  r3,  r3,  r5    //Exec t7 = y13 & y16; into r3
-    str  r5, [sp, #-44]  //Store r5/y16 on stack
-    str r11, [sp, #-48]  //Store r11/U7 on stack
+    str  r5, [sp, #4]    //Store r5/y16 on stack
+    str r11, [sp, #0]    //Store r11/U7 on stack
     eor  r5,  r4,  r5    //Exec y18 = U0 ^ y16; into r5
     eor  r6,  r6, r11    //Exec y1 = t0 ^ U7; into r6
     eor  r7,  r6,  r7    //Exec y4 = y1 ^ U3; into r7
@@ -3339,11 +3342,11 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r3,  r3,  r1    //Exec t19 = t9 ^ t14; into r3
     eor  r3,  r3,  r0    //Exec t23 = t19 ^ y21; into r3
     eor  r0, r10,  r9    //Exec y3 = y5 ^ y8; into r0
-    ldr r11, [sp, #-16]  //Load y6 into r11
+    ldr r11, [sp, #32]   //Load y6 into r11
     and  r5,  r0, r11    //Exec t3 = y3 & y6; into r5
     eor r12,  r5, r12    //Exec t4 = t3 ^ t2; into r12
-    ldr  r5, [sp, #-8 ]  //Load y20 into r5
-    str  r7, [sp, #-16]  //Store r7/y4 on stack
+    ldr  r5, [sp, #40]   //Load y20 into r5
+    str  r7, [sp, #32]   //Store r7/y4 on stack
     eor r12, r12,  r5    //Exec t17 = t4 ^ y20; into r12
     eor  r1, r12,  r1    //Exec t21 = t17 ^ t14; into r1
     and r12,  r1,  r3    //Exec t26 = t21 & t23; into r12
@@ -3363,11 +3366,11 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     and  r5, r14,  r5    //Exec t39 = t29 & t38; into r5
     eor  r1,  r1,  r5    //Exec t40 = t25 ^ t39; into r1
     eor  r5, r14,  r1    //Exec t43 = t29 ^ t40; into r5
-    ldr  r7, [sp, #-44]  //Load y16 into r7
+    ldr.w r7, [sp, #4]    //Load y16 into r7
     and  r7,  r5,  r7    //Exec z3 = t43 & y16; into r7
     eor  r8,  r7,  r8    //Exec tc12 = z3 ^ z5; into r8
-    str  r8, [sp, #-8 ]  //Store r8/tc12 on stack
-    ldr  r8, [sp, #-40]  //Load y13 into r8
+    str  r8, [sp, #40]   //Store r8/tc12 on stack
+    ldr  r8, [sp, #8]    //Load y13 into r8
     and  r8,  r5,  r8    //Exec z12 = t43 & y13; into r8
     and r10,  r1, r10    //Exec z13 = t40 & y5; into r10
     and  r6,  r1,  r6    //Exec z4 = t40 & y1; into r6
@@ -3375,31 +3378,31 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r3,  r3, r12    //Exec t34 = t23 ^ t33; into r3
     eor  r3,  r2,  r3    //Exec t37 = t36 ^ t34; into r3
     eor  r1,  r1,  r3    //Exec t41 = t40 ^ t37; into r1
-    ldr  r5, [sp, #-32]  //Load y10 into r5
+    ldr.w r5, [sp, #16]   //Load y10 into r5
     and  r2,  r1,  r5    //Exec z8 = t41 & y10; into r2
     and  r9,  r1,  r9    //Exec z17 = t41 & y8; into r9
-    str  r9, [sp, #-32]  //Store r9/z17 on stack
+    str  r9, [sp, #16]   //Store r9/z17 on stack
     eor  r5, r12,  r3    //Exec t44 = t33 ^ t37; into r5
-    ldr  r7, [sp, #-20]  //Load y15 into r7
-    ldr  r9, [sp, #-4 ]  //Load y12 into r9
+    ldr.w r7, [sp, #28]   //Load y15 into r7
+    ldr  r9, [sp, #44]   //Load y12 into r9
     and  r7,  r5,  r7    //Exec z0 = t44 & y15; into r7
     and  r9,  r5,  r9    //Exec z9 = t44 & y12; into r9
     and  r0,  r3,  r0    //Exec z10 = t37 & y3; into r0
     and  r3,  r3, r11    //Exec z1 = t37 & y6; into r3
     eor  r3,  r3,  r7    //Exec tc5 = z1 ^ z0; into r3
     eor  r3,  r6,  r3    //Exec tc11 = tc6 ^ tc5; into r3
-    ldr r11, [sp, #-16]  //Load y4 into r11
-    ldr  r5, [sp, #-28]  //Load y17 into r5
+    ldr r11, [sp, #32]   //Load y4 into r11
+    ldr.w r5, [sp, #20]   //Load y17 into r5
     and r11, r12, r11    //Exec z11 = t33 & y4; into r11
     eor r14, r14, r12    //Exec t42 = t29 ^ t33; into r14
     eor  r1, r14,  r1    //Exec t45 = t42 ^ t41; into r1
     and  r5,  r1,  r5    //Exec z7 = t45 & y17; into r5
     eor  r6,  r5,  r6    //Exec tc8 = z7 ^ tc6; into r6
-    ldr  r5, [sp, #-24]  //Load y14 into r5
-    str  r4, [sp, #-16]  //Store r4/z14 on stack
+    ldr.w r5, [sp, #24]   //Load y14 into r5
+    str.w r4, [sp, #32]   //Store r4/z14 on stack
     and  r1,  r1,  r5    //Exec z16 = t45 & y14; into r1
-    ldr  r5, [sp, #-36]  //Load y11 into r5
-    ldr  r4, [sp, #-12]  //Load y9 into r4
+    ldr  r5, [sp, #12]   //Load y11 into r5
+    ldr  r4, [sp, #36]   //Load y9 into r4
     and  r5, r14,  r5    //Exec z6 = t42 & y11; into r5
     eor  r5,  r5,  r6    //Exec tc16 = z6 ^ tc8; into r5
     and  r4, r14,  r4    //Exec z15 = t42 & y9; into r4
@@ -3412,18 +3415,18 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r9,  r9,  r3    //Exec S3 = tc3 ^ tc11; into r9
     eor  r3,  r9,  r5    //Exec S1 = S3 ^ tc16 ^ 1; into r3
     eor r11, r10,  r4    //Exec tc13 = z13 ^ tc1; into r11
-    ldr  r4, [sp, #-48]  //Load U7 into r4
+    ldr.w r4, [sp, #0]    //Load U7 into r4
     and r12, r12,  r4    //Exec z2 = t33 & U7; into r12
     eor  r7,  r7, r12    //Exec tc4 = z0 ^ z2; into r7
     eor r12,  r8,  r7    //Exec tc7 = z12 ^ tc4; into r12
     eor  r2,  r2, r12    //Exec tc9 = z8 ^ tc7; into r2
     eor  r2,  r6,  r2    //Exec tc10 = tc8 ^ tc9; into r2
-    ldr  r4, [sp, #-16]  //Load z14 into r4
+    ldr.w r4, [sp, #32]   //Load z14 into r4
     eor r12,  r4,  r2    //Exec tc17 = z14 ^ tc10; into r12
     eor  r0,  r0, r12    //Exec S5 = tc21 ^ tc17; into r0
     eor  r6, r12, r14    //Exec tc26 = tc17 ^ tc20; into r6
-    ldr  r4, [sp, #-32]  //Load z17 into r4
-    ldr r12, [sp, #-8 ]  //Load tc12 into r12
+    ldr.w r4, [sp, #16]   //Load z17 into r4
+    ldr r12, [sp, #40]   //Load tc12 into r12
     eor  r6,  r6,  r4    //Exec S2 = tc26 ^ z17 ^ 1; into r6
     eor r12,  r7, r12    //Exec tc14 = tc4 ^ tc12; into r12
     eor r14, r11, r12    //Exec tc18 = tc13 ^ tc14; into r14
@@ -3585,7 +3588,7 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor r8, r3, r8, ror #8
     eor r7, r12, r7, ror #8
     eor r11, r0, r11, ror #8
-    pop.w {r0} //for AddRoundKey, interleaving saves 10 cycles
+    ldr.w r0, [sp, #48] //for AddRoundKey, interleaving saves 10 cycles
     eor r10, r2, r10, ror #8
 
     //round 8
@@ -3601,7 +3604,7 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor r9, r2, r9, ror #8
     eor r10, r3, r10, ror #8
     eor r11, r12, r11, ror #8
-    push.w {r0} //must push, don't want to destroy original p.rk
+    str.w r0, [sp, #48] //must store, don't want to destroy original p.rk
 
     //SubBytes
     //Result of combining http://www.cs.yale.edu/homes/peralta/CircuitStuff/SLP_AES_113.txt with my custom instruction scheduler / register allocator
@@ -3614,34 +3617,34 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     and r12,  r2, r14    //Exec t2 = y12 & y15; into r12
     eor  r8, r14, r11    //Exec y6 = y15 ^ U7; into r8
     eor  r0,  r0,  r5    //Exec y20 = t1 ^ U1; into r0
-    str  r2, [sp, #-4 ]  //Store r2/y12 on stack
+    str.w r2, [sp, #44]   //Store r2/y12 on stack
     eor  r2,  r4,  r7    //Exec y9 = U0 ^ U3; into r2
-    str  r0, [sp, #-8 ]  //Store r0/y20 on stack
+    str  r0, [sp, #40]   //Store r0/y20 on stack
     eor  r0,  r0,  r2    //Exec y11 = y20 ^ y9; into r0
-    str  r2, [sp, #-12]  //Store r2/y9 on stack
+    str  r2, [sp, #36]   //Store r2/y9 on stack
     and  r2,  r2,  r0    //Exec t12 = y9 & y11; into r2
-    str  r8, [sp, #-16]  //Store r8/y6 on stack
+    str  r8, [sp, #32]   //Store r8/y6 on stack
     eor  r8, r11,  r0    //Exec y7 = U7 ^ y11; into r8
     eor  r9,  r4,  r9    //Exec y8 = U0 ^ U5; into r9
     eor  r6,  r5,  r6    //Exec t0 = U1 ^ U2; into r6
     eor  r5, r14,  r6    //Exec y10 = y15 ^ t0; into r5
-    str r14, [sp, #-20]  //Store r14/y15 on stack
+    str r14, [sp, #28]   //Store r14/y15 on stack
     eor r14,  r5,  r0    //Exec y17 = y10 ^ y11; into r14
-    str  r1, [sp, #-24]  //Store r1/y14 on stack
+    str.w r1, [sp, #24]   //Store r1/y14 on stack
     and  r1,  r1, r14    //Exec t13 = y14 & y17; into r1
     eor  r1,  r1,  r2    //Exec t14 = t13 ^ t12; into r1
-    str r14, [sp, #-28]  //Store r14/y17 on stack
+    str r14, [sp, #20]   //Store r14/y17 on stack
     eor r14,  r5,  r9    //Exec y19 = y10 ^ y8; into r14
-    str  r5, [sp, #-32]  //Store r5/y10 on stack
+    str.w r5, [sp, #16]   //Store r5/y10 on stack
     and  r5,  r9,  r5    //Exec t15 = y8 & y10; into r5
     eor  r2,  r5,  r2    //Exec t16 = t15 ^ t12; into r2
     eor  r5,  r6,  r0    //Exec y16 = t0 ^ y11; into r5
-    str  r0, [sp, #-36]  //Store r0/y11 on stack
+    str.w r0, [sp, #12]   //Store r0/y11 on stack
     eor  r0,  r3,  r5    //Exec y21 = y13 ^ y16; into r0
-    str  r3, [sp, #-40]  //Store r3/y13 on stack
+    str  r3, [sp, #8]    //Store r3/y13 on stack
     and  r3,  r3,  r5    //Exec t7 = y13 & y16; into r3
-    str  r5, [sp, #-44]  //Store r5/y16 on stack
-    str r11, [sp, #-48]  //Store r11/U7 on stack
+    str  r5, [sp, #4]    //Store r5/y16 on stack
+    str r11, [sp, #0]    //Store r11/U7 on stack
     eor  r5,  r4,  r5    //Exec y18 = U0 ^ y16; into r5
     eor  r6,  r6, r11    //Exec y1 = t0 ^ U7; into r6
     eor  r7,  r6,  r7    //Exec y4 = y1 ^ U3; into r7
@@ -3660,11 +3663,11 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r3,  r3,  r1    //Exec t19 = t9 ^ t14; into r3
     eor  r3,  r3,  r0    //Exec t23 = t19 ^ y21; into r3
     eor  r0, r10,  r9    //Exec y3 = y5 ^ y8; into r0
-    ldr r11, [sp, #-16]  //Load y6 into r11
+    ldr r11, [sp, #32]   //Load y6 into r11
     and  r5,  r0, r11    //Exec t3 = y3 & y6; into r5
     eor r12,  r5, r12    //Exec t4 = t3 ^ t2; into r12
-    ldr  r5, [sp, #-8 ]  //Load y20 into r5
-    str  r7, [sp, #-16]  //Store r7/y4 on stack
+    ldr  r5, [sp, #40]   //Load y20 into r5
+    str  r7, [sp, #32]   //Store r7/y4 on stack
     eor r12, r12,  r5    //Exec t17 = t4 ^ y20; into r12
     eor  r1, r12,  r1    //Exec t21 = t17 ^ t14; into r1
     and r12,  r1,  r3    //Exec t26 = t21 & t23; into r12
@@ -3684,11 +3687,11 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     and  r5, r14,  r5    //Exec t39 = t29 & t38; into r5
     eor  r1,  r1,  r5    //Exec t40 = t25 ^ t39; into r1
     eor  r5, r14,  r1    //Exec t43 = t29 ^ t40; into r5
-    ldr  r7, [sp, #-44]  //Load y16 into r7
+    ldr.w r7, [sp, #4]    //Load y16 into r7
     and  r7,  r5,  r7    //Exec z3 = t43 & y16; into r7
     eor  r8,  r7,  r8    //Exec tc12 = z3 ^ z5; into r8
-    str  r8, [sp, #-8 ]  //Store r8/tc12 on stack
-    ldr  r8, [sp, #-40]  //Load y13 into r8
+    str  r8, [sp, #40]   //Store r8/tc12 on stack
+    ldr  r8, [sp, #8]    //Load y13 into r8
     and  r8,  r5,  r8    //Exec z12 = t43 & y13; into r8
     and r10,  r1, r10    //Exec z13 = t40 & y5; into r10
     and  r6,  r1,  r6    //Exec z4 = t40 & y1; into r6
@@ -3696,31 +3699,31 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r3,  r3, r12    //Exec t34 = t23 ^ t33; into r3
     eor  r3,  r2,  r3    //Exec t37 = t36 ^ t34; into r3
     eor  r1,  r1,  r3    //Exec t41 = t40 ^ t37; into r1
-    ldr  r5, [sp, #-32]  //Load y10 into r5
+    ldr.w r5, [sp, #16]   //Load y10 into r5
     and  r2,  r1,  r5    //Exec z8 = t41 & y10; into r2
     and  r9,  r1,  r9    //Exec z17 = t41 & y8; into r9
-    str  r9, [sp, #-32]  //Store r9/z17 on stack
+    str  r9, [sp, #16]   //Store r9/z17 on stack
     eor  r5, r12,  r3    //Exec t44 = t33 ^ t37; into r5
-    ldr  r7, [sp, #-20]  //Load y15 into r7
-    ldr  r9, [sp, #-4 ]  //Load y12 into r9
+    ldr.w r7, [sp, #28]   //Load y15 into r7
+    ldr  r9, [sp, #44]   //Load y12 into r9
     and  r7,  r5,  r7    //Exec z0 = t44 & y15; into r7
     and  r9,  r5,  r9    //Exec z9 = t44 & y12; into r9
     and  r0,  r3,  r0    //Exec z10 = t37 & y3; into r0
     and  r3,  r3, r11    //Exec z1 = t37 & y6; into r3
     eor  r3,  r3,  r7    //Exec tc5 = z1 ^ z0; into r3
     eor  r3,  r6,  r3    //Exec tc11 = tc6 ^ tc5; into r3
-    ldr r11, [sp, #-16]  //Load y4 into r11
-    ldr  r5, [sp, #-28]  //Load y17 into r5
+    ldr r11, [sp, #32]   //Load y4 into r11
+    ldr.w r5, [sp, #20]   //Load y17 into r5
     and r11, r12, r11    //Exec z11 = t33 & y4; into r11
     eor r14, r14, r12    //Exec t42 = t29 ^ t33; into r14
     eor  r1, r14,  r1    //Exec t45 = t42 ^ t41; into r1
     and  r5,  r1,  r5    //Exec z7 = t45 & y17; into r5
     eor  r6,  r5,  r6    //Exec tc8 = z7 ^ tc6; into r6
-    ldr  r5, [sp, #-24]  //Load y14 into r5
-    str  r4, [sp, #-16]  //Store r4/z14 on stack
+    ldr.w r5, [sp, #24]   //Load y14 into r5
+    str.w r4, [sp, #32]   //Store r4/z14 on stack
     and  r1,  r1,  r5    //Exec z16 = t45 & y14; into r1
-    ldr  r5, [sp, #-36]  //Load y11 into r5
-    ldr  r4, [sp, #-12]  //Load y9 into r4
+    ldr  r5, [sp, #12]   //Load y11 into r5
+    ldr  r4, [sp, #36]   //Load y9 into r4
     and  r5, r14,  r5    //Exec z6 = t42 & y11; into r5
     eor  r5,  r5,  r6    //Exec tc16 = z6 ^ tc8; into r5
     and  r4, r14,  r4    //Exec z15 = t42 & y9; into r4
@@ -3733,18 +3736,18 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r9,  r9,  r3    //Exec S3 = tc3 ^ tc11; into r9
     eor  r3,  r9,  r5    //Exec S1 = S3 ^ tc16 ^ 1; into r3
     eor r11, r10,  r4    //Exec tc13 = z13 ^ tc1; into r11
-    ldr  r4, [sp, #-48]  //Load U7 into r4
+    ldr.w r4, [sp, #0]    //Load U7 into r4
     and r12, r12,  r4    //Exec z2 = t33 & U7; into r12
     eor  r7,  r7, r12    //Exec tc4 = z0 ^ z2; into r7
     eor r12,  r8,  r7    //Exec tc7 = z12 ^ tc4; into r12
     eor  r2,  r2, r12    //Exec tc9 = z8 ^ tc7; into r2
     eor  r2,  r6,  r2    //Exec tc10 = tc8 ^ tc9; into r2
-    ldr  r4, [sp, #-16]  //Load z14 into r4
+    ldr.w r4, [sp, #32]   //Load z14 into r4
     eor r12,  r4,  r2    //Exec tc17 = z14 ^ tc10; into r12
     eor  r0,  r0, r12    //Exec S5 = tc21 ^ tc17; into r0
     eor  r6, r12, r14    //Exec tc26 = tc17 ^ tc20; into r6
-    ldr  r4, [sp, #-32]  //Load z17 into r4
-    ldr r12, [sp, #-8 ]  //Load tc12 into r12
+    ldr.w r4, [sp, #16]   //Load z17 into r4
+    ldr r12, [sp, #40]   //Load tc12 into r12
     eor  r6,  r6,  r4    //Exec S2 = tc26 ^ z17 ^ 1; into r6
     eor r12,  r7, r12    //Exec tc14 = tc4 ^ tc12; into r12
     eor r14, r11, r12    //Exec tc18 = tc13 ^ tc14; into r14
@@ -3906,7 +3909,7 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor r8, r3, r8, ror #8
     eor r7, r12, r7, ror #8
     eor r11, r0, r11, ror #8
-    pop.w {r0} //for AddRoundKey, interleaving saves 10 cycles
+    ldr.w r0, [sp, #48] //for AddRoundKey, interleaving saves 10 cycles
     eor r10, r2, r10, ror #8
 
     //round 9
@@ -3922,7 +3925,7 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor r9, r2, r9, ror #8
     eor r10, r3, r10, ror #8
     eor r11, r12, r11, ror #8
-    push.w {r0} //must push, don't want to destroy original p.rk
+    str.w r0, [sp, #48] //must store, don't want to destroy original p.rk
 
     //SubBytes
     //Result of combining http://www.cs.yale.edu/homes/peralta/CircuitStuff/SLP_AES_113.txt with my custom instruction scheduler / register allocator
@@ -3935,34 +3938,34 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     and r12,  r2, r14    //Exec t2 = y12 & y15; into r12
     eor  r8, r14, r11    //Exec y6 = y15 ^ U7; into r8
     eor  r0,  r0,  r5    //Exec y20 = t1 ^ U1; into r0
-    str  r2, [sp, #-4 ]  //Store r2/y12 on stack
+    str.w r2, [sp, #44]   //Store r2/y12 on stack
     eor  r2,  r4,  r7    //Exec y9 = U0 ^ U3; into r2
-    str  r0, [sp, #-8 ]  //Store r0/y20 on stack
+    str  r0, [sp, #40]   //Store r0/y20 on stack
     eor  r0,  r0,  r2    //Exec y11 = y20 ^ y9; into r0
-    str  r2, [sp, #-12]  //Store r2/y9 on stack
+    str  r2, [sp, #36]   //Store r2/y9 on stack
     and  r2,  r2,  r0    //Exec t12 = y9 & y11; into r2
-    str  r8, [sp, #-16]  //Store r8/y6 on stack
+    str  r8, [sp, #32]   //Store r8/y6 on stack
     eor  r8, r11,  r0    //Exec y7 = U7 ^ y11; into r8
     eor  r9,  r4,  r9    //Exec y8 = U0 ^ U5; into r9
     eor  r6,  r5,  r6    //Exec t0 = U1 ^ U2; into r6
     eor  r5, r14,  r6    //Exec y10 = y15 ^ t0; into r5
-    str r14, [sp, #-20]  //Store r14/y15 on stack
+    str r14, [sp, #28]   //Store r14/y15 on stack
     eor r14,  r5,  r0    //Exec y17 = y10 ^ y11; into r14
-    str  r1, [sp, #-24]  //Store r1/y14 on stack
+    str.w r1, [sp, #24]   //Store r1/y14 on stack
     and  r1,  r1, r14    //Exec t13 = y14 & y17; into r1
     eor  r1,  r1,  r2    //Exec t14 = t13 ^ t12; into r1
-    str r14, [sp, #-28]  //Store r14/y17 on stack
+    str r14, [sp, #20]   //Store r14/y17 on stack
     eor r14,  r5,  r9    //Exec y19 = y10 ^ y8; into r14
-    str  r5, [sp, #-32]  //Store r5/y10 on stack
+    str.w r5, [sp, #16]   //Store r5/y10 on stack
     and  r5,  r9,  r5    //Exec t15 = y8 & y10; into r5
     eor  r2,  r5,  r2    //Exec t16 = t15 ^ t12; into r2
     eor  r5,  r6,  r0    //Exec y16 = t0 ^ y11; into r5
-    str  r0, [sp, #-36]  //Store r0/y11 on stack
+    str.w r0, [sp, #12]   //Store r0/y11 on stack
     eor  r0,  r3,  r5    //Exec y21 = y13 ^ y16; into r0
-    str  r3, [sp, #-40]  //Store r3/y13 on stack
+    str  r3, [sp, #8]    //Store r3/y13 on stack
     and  r3,  r3,  r5    //Exec t7 = y13 & y16; into r3
-    str  r5, [sp, #-44]  //Store r5/y16 on stack
-    str r11, [sp, #-48]  //Store r11/U7 on stack
+    str  r5, [sp, #4]    //Store r5/y16 on stack
+    str r11, [sp, #0]    //Store r11/U7 on stack
     eor  r5,  r4,  r5    //Exec y18 = U0 ^ y16; into r5
     eor  r6,  r6, r11    //Exec y1 = t0 ^ U7; into r6
     eor  r7,  r6,  r7    //Exec y4 = y1 ^ U3; into r7
@@ -3981,11 +3984,11 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r3,  r3,  r1    //Exec t19 = t9 ^ t14; into r3
     eor  r3,  r3,  r0    //Exec t23 = t19 ^ y21; into r3
     eor  r0, r10,  r9    //Exec y3 = y5 ^ y8; into r0
-    ldr r11, [sp, #-16]  //Load y6 into r11
+    ldr r11, [sp, #32]   //Load y6 into r11
     and  r5,  r0, r11    //Exec t3 = y3 & y6; into r5
     eor r12,  r5, r12    //Exec t4 = t3 ^ t2; into r12
-    ldr  r5, [sp, #-8 ]  //Load y20 into r5
-    str  r7, [sp, #-16]  //Store r7/y4 on stack
+    ldr  r5, [sp, #40]   //Load y20 into r5
+    str  r7, [sp, #32]   //Store r7/y4 on stack
     eor r12, r12,  r5    //Exec t17 = t4 ^ y20; into r12
     eor  r1, r12,  r1    //Exec t21 = t17 ^ t14; into r1
     and r12,  r1,  r3    //Exec t26 = t21 & t23; into r12
@@ -4005,11 +4008,11 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     and  r5, r14,  r5    //Exec t39 = t29 & t38; into r5
     eor  r1,  r1,  r5    //Exec t40 = t25 ^ t39; into r1
     eor  r5, r14,  r1    //Exec t43 = t29 ^ t40; into r5
-    ldr  r7, [sp, #-44]  //Load y16 into r7
+    ldr.w r7, [sp, #4]    //Load y16 into r7
     and  r7,  r5,  r7    //Exec z3 = t43 & y16; into r7
     eor  r8,  r7,  r8    //Exec tc12 = z3 ^ z5; into r8
-    str  r8, [sp, #-8 ]  //Store r8/tc12 on stack
-    ldr  r8, [sp, #-40]  //Load y13 into r8
+    str  r8, [sp, #40]   //Store r8/tc12 on stack
+    ldr  r8, [sp, #8]    //Load y13 into r8
     and  r8,  r5,  r8    //Exec z12 = t43 & y13; into r8
     and r10,  r1, r10    //Exec z13 = t40 & y5; into r10
     and  r6,  r1,  r6    //Exec z4 = t40 & y1; into r6
@@ -4017,31 +4020,31 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r3,  r3, r12    //Exec t34 = t23 ^ t33; into r3
     eor  r3,  r2,  r3    //Exec t37 = t36 ^ t34; into r3
     eor  r1,  r1,  r3    //Exec t41 = t40 ^ t37; into r1
-    ldr  r5, [sp, #-32]  //Load y10 into r5
+    ldr.w r5, [sp, #16]   //Load y10 into r5
     and  r2,  r1,  r5    //Exec z8 = t41 & y10; into r2
     and  r9,  r1,  r9    //Exec z17 = t41 & y8; into r9
-    str  r9, [sp, #-32]  //Store r9/z17 on stack
+    str  r9, [sp, #16]   //Store r9/z17 on stack
     eor  r5, r12,  r3    //Exec t44 = t33 ^ t37; into r5
-    ldr  r7, [sp, #-20]  //Load y15 into r7
-    ldr  r9, [sp, #-4 ]  //Load y12 into r9
+    ldr.w r7, [sp, #28]   //Load y15 into r7
+    ldr  r9, [sp, #44]   //Load y12 into r9
     and  r7,  r5,  r7    //Exec z0 = t44 & y15; into r7
     and  r9,  r5,  r9    //Exec z9 = t44 & y12; into r9
     and  r0,  r3,  r0    //Exec z10 = t37 & y3; into r0
     and  r3,  r3, r11    //Exec z1 = t37 & y6; into r3
     eor  r3,  r3,  r7    //Exec tc5 = z1 ^ z0; into r3
     eor  r3,  r6,  r3    //Exec tc11 = tc6 ^ tc5; into r3
-    ldr r11, [sp, #-16]  //Load y4 into r11
-    ldr  r5, [sp, #-28]  //Load y17 into r5
+    ldr r11, [sp, #32]   //Load y4 into r11
+    ldr.w r5, [sp, #20]   //Load y17 into r5
     and r11, r12, r11    //Exec z11 = t33 & y4; into r11
     eor r14, r14, r12    //Exec t42 = t29 ^ t33; into r14
     eor  r1, r14,  r1    //Exec t45 = t42 ^ t41; into r1
     and  r5,  r1,  r5    //Exec z7 = t45 & y17; into r5
     eor  r6,  r5,  r6    //Exec tc8 = z7 ^ tc6; into r6
-    ldr  r5, [sp, #-24]  //Load y14 into r5
-    str  r4, [sp, #-16]  //Store r4/z14 on stack
+    ldr.w r5, [sp, #24]   //Load y14 into r5
+    str.w r4, [sp, #32]   //Store r4/z14 on stack
     and  r1,  r1,  r5    //Exec z16 = t45 & y14; into r1
-    ldr  r5, [sp, #-36]  //Load y11 into r5
-    ldr  r4, [sp, #-12]  //Load y9 into r4
+    ldr  r5, [sp, #12]   //Load y11 into r5
+    ldr  r4, [sp, #36]   //Load y9 into r4
     and  r5, r14,  r5    //Exec z6 = t42 & y11; into r5
     eor  r5,  r5,  r6    //Exec tc16 = z6 ^ tc8; into r5
     and  r4, r14,  r4    //Exec z15 = t42 & y9; into r4
@@ -4054,18 +4057,18 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r9,  r9,  r3    //Exec S3 = tc3 ^ tc11; into r9
     eor  r3,  r9,  r5    //Exec S1 = S3 ^ tc16 ^ 1; into r3
     eor r11, r10,  r4    //Exec tc13 = z13 ^ tc1; into r11
-    ldr  r4, [sp, #-48]  //Load U7 into r4
+    ldr.w r4, [sp, #0]    //Load U7 into r4
     and r12, r12,  r4    //Exec z2 = t33 & U7; into r12
     eor  r7,  r7, r12    //Exec tc4 = z0 ^ z2; into r7
     eor r12,  r8,  r7    //Exec tc7 = z12 ^ tc4; into r12
     eor  r2,  r2, r12    //Exec tc9 = z8 ^ tc7; into r2
     eor  r2,  r6,  r2    //Exec tc10 = tc8 ^ tc9; into r2
-    ldr  r4, [sp, #-16]  //Load z14 into r4
+    ldr.w r4, [sp, #32]   //Load z14 into r4
     eor r12,  r4,  r2    //Exec tc17 = z14 ^ tc10; into r12
     eor  r0,  r0, r12    //Exec S5 = tc21 ^ tc17; into r0
     eor  r6, r12, r14    //Exec tc26 = tc17 ^ tc20; into r6
-    ldr  r4, [sp, #-32]  //Load z17 into r4
-    ldr r12, [sp, #-8 ]  //Load tc12 into r12
+    ldr.w r4, [sp, #16]   //Load z17 into r4
+    ldr r12, [sp, #40]   //Load tc12 into r12
     eor  r6,  r6,  r4    //Exec S2 = tc26 ^ z17 ^ 1; into r6
     eor r12,  r7, r12    //Exec tc14 = tc4 ^ tc12; into r12
     eor r14, r11, r12    //Exec tc18 = tc13 ^ tc14; into r14
@@ -4227,7 +4230,7 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor r8, r3, r8, ror #8
     eor r7, r12, r7, ror #8
     eor r11, r0, r11, ror #8
-    pop.w {r0} //for AddRoundKey, interleaving saves 10 cycles
+    ldr.w r0, [sp, #48] //for AddRoundKey, interleaving saves 10 cycles
     eor r10, r2, r10, ror #8
 
     //round 10
@@ -4243,7 +4246,7 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor r9, r2, r9, ror #8
     eor r10, r3, r10, ror #8
     eor r11, r12, r11, ror #8
-    push.w {r0}
+    str.w r0, [sp, #48]
 
     //SubBytes
     //Result of combining http://www.cs.yale.edu/homes/peralta/CircuitStuff/SLP_AES_113.txt with my custom instruction scheduler / register allocator
@@ -4256,34 +4259,34 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     and r12,  r2, r14    //Exec t2 = y12 & y15; into r12
     eor  r8, r14, r11    //Exec y6 = y15 ^ U7; into r8
     eor  r0,  r0,  r5    //Exec y20 = t1 ^ U1; into r0
-    str  r2, [sp, #-4 ]  //Store r2/y12 on stack
+    str.w r2, [sp, #44]   //Store r2/y12 on stack
     eor  r2,  r4,  r7    //Exec y9 = U0 ^ U3; into r2
-    str  r0, [sp, #-8 ]  //Store r0/y20 on stack
+    str  r0, [sp, #40]   //Store r0/y20 on stack
     eor  r0,  r0,  r2    //Exec y11 = y20 ^ y9; into r0
-    str  r2, [sp, #-12]  //Store r2/y9 on stack
+    str  r2, [sp, #36]   //Store r2/y9 on stack
     and  r2,  r2,  r0    //Exec t12 = y9 & y11; into r2
-    str  r8, [sp, #-16]  //Store r8/y6 on stack
+    str  r8, [sp, #32]   //Store r8/y6 on stack
     eor  r8, r11,  r0    //Exec y7 = U7 ^ y11; into r8
     eor  r9,  r4,  r9    //Exec y8 = U0 ^ U5; into r9
     eor  r6,  r5,  r6    //Exec t0 = U1 ^ U2; into r6
     eor  r5, r14,  r6    //Exec y10 = y15 ^ t0; into r5
-    str r14, [sp, #-20]  //Store r14/y15 on stack
+    str r14, [sp, #28]   //Store r14/y15 on stack
     eor r14,  r5,  r0    //Exec y17 = y10 ^ y11; into r14
-    str  r1, [sp, #-24]  //Store r1/y14 on stack
+    str.w r1, [sp, #24]   //Store r1/y14 on stack
     and  r1,  r1, r14    //Exec t13 = y14 & y17; into r1
     eor  r1,  r1,  r2    //Exec t14 = t13 ^ t12; into r1
-    str r14, [sp, #-28]  //Store r14/y17 on stack
+    str r14, [sp, #20]   //Store r14/y17 on stack
     eor r14,  r5,  r9    //Exec y19 = y10 ^ y8; into r14
-    str  r5, [sp, #-32]  //Store r5/y10 on stack
+    str.w r5, [sp, #16]   //Store r5/y10 on stack
     and  r5,  r9,  r5    //Exec t15 = y8 & y10; into r5
     eor  r2,  r5,  r2    //Exec t16 = t15 ^ t12; into r2
     eor  r5,  r6,  r0    //Exec y16 = t0 ^ y11; into r5
-    str  r0, [sp, #-36]  //Store r0/y11 on stack
+    str.w r0, [sp, #12]   //Store r0/y11 on stack
     eor  r0,  r3,  r5    //Exec y21 = y13 ^ y16; into r0
-    str  r3, [sp, #-40]  //Store r3/y13 on stack
+    str  r3, [sp, #8]    //Store r3/y13 on stack
     and  r3,  r3,  r5    //Exec t7 = y13 & y16; into r3
-    str  r5, [sp, #-44]  //Store r5/y16 on stack
-    str r11, [sp, #-48]  //Store r11/U7 on stack
+    str  r5, [sp, #4]    //Store r5/y16 on stack
+    str r11, [sp, #0]    //Store r11/U7 on stack
     eor  r5,  r4,  r5    //Exec y18 = U0 ^ y16; into r5
     eor  r6,  r6, r11    //Exec y1 = t0 ^ U7; into r6
     eor  r7,  r6,  r7    //Exec y4 = y1 ^ U3; into r7
@@ -4302,11 +4305,11 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r3,  r3,  r1    //Exec t19 = t9 ^ t14; into r3
     eor  r3,  r3,  r0    //Exec t23 = t19 ^ y21; into r3
     eor  r0, r10,  r9    //Exec y3 = y5 ^ y8; into r0
-    ldr r11, [sp, #-16]  //Load y6 into r11
+    ldr r11, [sp, #32]   //Load y6 into r11
     and  r5,  r0, r11    //Exec t3 = y3 & y6; into r5
     eor r12,  r5, r12    //Exec t4 = t3 ^ t2; into r12
-    ldr  r5, [sp, #-8 ]  //Load y20 into r5
-    str  r7, [sp, #-16]  //Store r7/y4 on stack
+    ldr  r5, [sp, #40]   //Load y20 into r5
+    str  r7, [sp, #32]   //Store r7/y4 on stack
     eor r12, r12,  r5    //Exec t17 = t4 ^ y20; into r12
     eor  r1, r12,  r1    //Exec t21 = t17 ^ t14; into r1
     and r12,  r1,  r3    //Exec t26 = t21 & t23; into r12
@@ -4326,11 +4329,11 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     and  r5, r14,  r5    //Exec t39 = t29 & t38; into r5
     eor  r1,  r1,  r5    //Exec t40 = t25 ^ t39; into r1
     eor  r5, r14,  r1    //Exec t43 = t29 ^ t40; into r5
-    ldr  r7, [sp, #-44]  //Load y16 into r7
+    ldr.w r7, [sp, #4]    //Load y16 into r7
     and  r7,  r5,  r7    //Exec z3 = t43 & y16; into r7
     eor  r8,  r7,  r8    //Exec tc12 = z3 ^ z5; into r8
-    str  r8, [sp, #-8 ]  //Store r8/tc12 on stack
-    ldr  r8, [sp, #-40]  //Load y13 into r8
+    str  r8, [sp, #40]   //Store r8/tc12 on stack
+    ldr  r8, [sp, #8]    //Load y13 into r8
     and  r8,  r5,  r8    //Exec z12 = t43 & y13; into r8
     and r10,  r1, r10    //Exec z13 = t40 & y5; into r10
     and  r6,  r1,  r6    //Exec z4 = t40 & y1; into r6
@@ -4338,31 +4341,31 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r3,  r3, r12    //Exec t34 = t23 ^ t33; into r3
     eor  r3,  r2,  r3    //Exec t37 = t36 ^ t34; into r3
     eor  r1,  r1,  r3    //Exec t41 = t40 ^ t37; into r1
-    ldr  r5, [sp, #-32]  //Load y10 into r5
+    ldr.w r5, [sp, #16]   //Load y10 into r5
     and  r2,  r1,  r5    //Exec z8 = t41 & y10; into r2
     and  r9,  r1,  r9    //Exec z17 = t41 & y8; into r9
-    str  r9, [sp, #-32]  //Store r9/z17 on stack
+    str  r9, [sp, #16]   //Store r9/z17 on stack
     eor  r5, r12,  r3    //Exec t44 = t33 ^ t37; into r5
-    ldr  r7, [sp, #-20]  //Load y15 into r7
-    ldr  r9, [sp, #-4 ]  //Load y12 into r9
+    ldr.w r7, [sp, #28]   //Load y15 into r7
+    ldr  r9, [sp, #44]   //Load y12 into r9
     and  r7,  r5,  r7    //Exec z0 = t44 & y15; into r7
     and  r9,  r5,  r9    //Exec z9 = t44 & y12; into r9
     and  r0,  r3,  r0    //Exec z10 = t37 & y3; into r0
     and  r3,  r3, r11    //Exec z1 = t37 & y6; into r3
     eor  r3,  r3,  r7    //Exec tc5 = z1 ^ z0; into r3
     eor  r3,  r6,  r3    //Exec tc11 = tc6 ^ tc5; into r3
-    ldr r11, [sp, #-16]  //Load y4 into r11
-    ldr  r5, [sp, #-28]  //Load y17 into r5
+    ldr r11, [sp, #32]   //Load y4 into r11
+    ldr.w r5, [sp, #20]   //Load y17 into r5
     and r11, r12, r11    //Exec z11 = t33 & y4; into r11
     eor r14, r14, r12    //Exec t42 = t29 ^ t33; into r14
     eor  r1, r14,  r1    //Exec t45 = t42 ^ t41; into r1
     and  r5,  r1,  r5    //Exec z7 = t45 & y17; into r5
     eor  r6,  r5,  r6    //Exec tc8 = z7 ^ tc6; into r6
-    ldr  r5, [sp, #-24]  //Load y14 into r5
-    str  r4, [sp, #-16]  //Store r4/z14 on stack
+    ldr.w r5, [sp, #24]   //Load y14 into r5
+    str.w r4, [sp, #32]   //Store r4/z14 on stack
     and  r1,  r1,  r5    //Exec z16 = t45 & y14; into r1
-    ldr  r5, [sp, #-36]  //Load y11 into r5
-    ldr  r4, [sp, #-12]  //Load y9 into r4
+    ldr  r5, [sp, #12]   //Load y11 into r5
+    ldr  r4, [sp, #36]   //Load y9 into r4
     and  r5, r14,  r5    //Exec z6 = t42 & y11; into r5
     eor  r5,  r5,  r6    //Exec tc16 = z6 ^ tc8; into r5
     and  r4, r14,  r4    //Exec z15 = t42 & y9; into r4
@@ -4375,18 +4378,18 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor  r9,  r9,  r3    //Exec S3 = tc3 ^ tc11; into r9
     eor  r3,  r9,  r5    //Exec S1 = S3 ^ tc16 ^ 1; into r3
     eor r11, r10,  r4    //Exec tc13 = z13 ^ tc1; into r11
-    ldr  r4, [sp, #-48]  //Load U7 into r4
+    ldr.w r4, [sp, #0]    //Load U7 into r4
     and r12, r12,  r4    //Exec z2 = t33 & U7; into r12
     eor  r7,  r7, r12    //Exec tc4 = z0 ^ z2; into r7
     eor r12,  r8,  r7    //Exec tc7 = z12 ^ tc4; into r12
     eor  r2,  r2, r12    //Exec tc9 = z8 ^ tc7; into r2
     eor  r2,  r6,  r2    //Exec tc10 = tc8 ^ tc9; into r2
-    ldr  r4, [sp, #-16]  //Load z14 into r4
+    ldr.w r4, [sp, #32]   //Load z14 into r4
     eor r12,  r4,  r2    //Exec tc17 = z14 ^ tc10; into r12
     eor  r0,  r0, r12    //Exec S5 = tc21 ^ tc17; into r0
     eor  r6, r12, r14    //Exec tc26 = tc17 ^ tc20; into r6
-    ldr  r4, [sp, #-32]  //Load z17 into r4
-    ldr r12, [sp, #-8 ]  //Load tc12 into r12
+    ldr.w r4, [sp, #16]   //Load z17 into r4
+    ldr r12, [sp, #40]   //Load tc12 into r12
     eor  r6,  r6,  r4    //Exec S2 = tc26 ^ z17 ^ 1; into r6
     eor r12,  r7, r12    //Exec tc14 = tc4 ^ tc12; into r12
     eor r14, r11, r12    //Exec tc18 = tc13 ^ tc14; into r14
@@ -4508,7 +4511,7 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     ubfx r12, r11, #26, #6
     eor r3, r3, r12, lsl #24
     ubfx r12, r11, #24, #2
-    pop.w {r0}
+    ldr.w r0, [sp, #48]
     eor r11, r3, r12, lsl #30
 
     //AddRoundKey
@@ -4522,7 +4525,7 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor r9, r2
     eor r10, r3
     eor r11, r12
-    //push.r {r0} not necessary in final round
+    //str.w r0, [sp, #48] not necessary in final round
 
     //inverse transform of two blocks into non-bitsliced state
     ldr r14, =AES_bsconst //in r14, as required by encrypt_blocks
@@ -4596,7 +4599,7 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor r6, r6, r12, lsr #1
 
     //load in
-    ldr.w r0, [sp, #4]
+    ldr.w r0, [sp, #56]
 
     //load input, xor keystream and write to output
     ldmia r0!, {r1-r3,r12} //load first block input
@@ -4604,7 +4607,7 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor r5, r2
     eor r6, r3
     eor r7, r12
-    ldr r1, [sp, #8] //load out
+    ldr r1, [sp, #60] //load out
     stmia.w r1!, {r4-r7} //write first block output
 
     ldmia r0!, {r4-r7} //load second block input
@@ -4613,29 +4616,31 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
     eor r10, r6
     eor r11, r7
     stmia r1!, {r8-r11} //write second block output
-    str r0, [sp, #4] //store in
-    str r1, [sp, #8] //store out
+    str r0, [sp, #56] //store in
+    str r1, [sp, #60] //store out
 
     //load p, len, ctr
-    ldr r0, [sp] //p in r0, as required by encrypt_blocks
-    ldr r3, [sp, #12] //len
-    ldr r4, [r0] //ctr
+    ldr r0, [sp, #52] //p in r0, as required by encrypt_blocks
+    ldr r3, [sp, #64] //len
+    ldr r4, [r0, #12] //ctr
 
     //dec and store len counter
     subs r3, #32
     ble exit //if len<=0: exit
-    str r3, [sp, #12]
+    str r3, [sp, #64]
 
     //inc and store ctr
+    rev r4, r4
     add r4, #2
-    str.w r4, [r0]
+    rev r4, r4
+    str r4, [r0, #12]
 
     b encrypt_blocks
 
 .align 2
 exit:
     //function epilogue, restore state
-    add sp, #16
+    add sp, #68
     pop {r4-r12,r14}
     bx lr
 
