@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
 
 typedef struct param {
     uint32_t ctr;
@@ -19,6 +20,7 @@ int main(void)
     gpio_setup();
     usart_setup(115200);
     flash_setup();
+    srand(42);
 
     // plainly reading from CYCCNT is more efficient than using the
     // dwt_read_cycle_counter() interface offered by libopencm3,
@@ -27,79 +29,87 @@ int main(void)
     SCS_DEMCR |= SCS_DEMCR_TRCENA;
     DWT_CYCCNT = 0;
     DWT_CTRL |= DWT_CTRL_CYCCNTENA;
-    
+
     const uint32_t LEN = 256*16;
     const uint32_t LEN_ROUNDED = ((LEN+31)/32)*32;
 
-    const uint8_t nonce[12] = {1,2,3,1,2,4,1,2,5,1,2,6};
-    const uint8_t key[16] = {4,5,6,7,4,5,6,8,4,5,6,9,4,5,6,10};
+    uint8_t key[16];
     uint8_t in[LEN];
     uint8_t out[LEN_ROUNDED];
-    
-    unsigned int i;
-    for(i=0;i<LEN;++i)
-        in[i] = i%256;
-    
+
+    unsigned int i, j;
     char buffer[36];
     param p;
-    p.ctr = 0;
-    memcpy(p.nonce, nonce, 12);
 
-    unsigned int oldcount = DWT_CYCCNT;
-    AES_128_keyschedule(key, p.rk);
-    unsigned int cyclecount = DWT_CYCCNT-oldcount;
+    for (i=0;i<10000;++i) {
+        p.ctr = 0;
+        for (j = 0; j < 12; ++j) {
+            p.nonce[j] = rand();
+        }
+        for (j = 0; j < 16; ++j) {
+            key[j] = rand();
+        }
+        for (j = 0; j < LEN; ++j) {
+            in[j] = rand();
+        }
+        memcpy(p.rk, key, 16);
 
-/*
-    // Print all round keys
-    unsigned int j;
-    for(i=0;i<2*11*4;++i) {
-        sprintf(buffer, "rk[%2d]: ", i);
-        for(j=0;j<4;++j)
-            sprintf(buffer+2*j+8, "%02x", p.rk[i*4+j]);
-        send_USART_str(buffer);
-    }
-*/
-
-    sprintf(buffer, "cyc: %d", cyclecount); 
-    send_USART_str(buffer);
-
-    oldcount = DWT_CYCCNT;
-    AES_128_encrypt_ctr(&p, in, out, LEN);
-    cyclecount = DWT_CYCCNT-oldcount;
-  
-    sprintf(buffer, "cyc: %d", cyclecount); 
-    send_USART_str(buffer);
+        unsigned int oldcount = DWT_CYCCNT;
+        AES_128_keyschedule(key, p.rk);
+        unsigned int cyclecount = DWT_CYCCNT-oldcount;
 
 /*
-    // Print ciphertext
-    sprintf(buffer, "out: ");
-    send_USART_str(buffer);
-    for(i=0;i<LEN;++i) {
-        sprintf(buffer+((2*i)%32), "%02x", out[i]);
-        if(i%16 == 15)
+        // Print all round keys
+        unsigned int j;
+        for(i=0;i<2*11*4;++i) {
+            sprintf(buffer, "rk[%2d]: ", i);
+            for(j=0;j<4;++j)
+                sprintf(buffer+2*j+8, "%02x", p.rk[i*4+j]);
             send_USART_str(buffer);
-    }
-    if(LEN%16 > 0)
-        send_USART_str(buffer);
+        }
 */
-    
+
+        sprintf(buffer, "cyc: %d", cyclecount);
+        send_USART_str(buffer);
+
+        oldcount = DWT_CYCCNT;
+        AES_128_encrypt_ctr(&p, in, out, LEN);
+        cyclecount = DWT_CYCCNT-oldcount;
+
+        sprintf(buffer, "cyc: %d", cyclecount);
+        send_USART_str(buffer);
+
 /*
-    // Perform decryption
-    p.ctr = 0;
-
-    AES_128_decrypt_ctr(&p, out, in, LEN);
-
-    // Print plaintext
-    sprintf(buffer, "in: ");
-    send_USART_str(buffer);
-    for(i=0;i<LEN;++i) {
-        sprintf(buffer+((2*i)%32), "%02x", in[i]);
-        if(i%16 == 15)
-            send_USART_str(buffer);
-    }
-    if(LEN%16 > 0)
+        // Print ciphertext
+        sprintf(buffer, "out: ");
         send_USART_str(buffer);
+        for(i=0;i<LEN;++i) {
+            sprintf(buffer+((2*i)%32), "%02x", out[i]);
+            if(i%16 == 15)
+                send_USART_str(buffer);
+        }
+        if(LEN%16 > 0)
+            send_USART_str(buffer);
 */
+
+/*
+        // Perform decryption
+        p.ctr = 0;
+
+        AES_128_decrypt_ctr(&p, out, in, LEN);
+
+        // Print plaintext
+        sprintf(buffer, "in: ");
+        send_USART_str(buffer);
+        for(i=0;i<LEN;++i) {
+            sprintf(buffer+((2*i)%32), "%02x", in[i]);
+            if(i%16 == 15)
+                send_USART_str(buffer);
+        }
+        if(LEN%16 > 0)
+            send_USART_str(buffer);
+*/
+    }
 
     while (1);
 

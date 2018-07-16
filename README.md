@@ -28,8 +28,8 @@ All numbers mentioned below were obtained on the STM32L100C (Cortex-M3) and STM3
 | AES-256 key expansion | 315.8 | 319.9 | 958 (code) + 1024 (data) | 240 (in/out) + 32 (stack) |
 | AES-256 encryption/decryption in CTR mode | 767.9 | 774.6 | 2896 (code) + 1024 (data) | 256+2m (in/out) + 72 (stack) | 
 | AES-128 key expansion to bitsliced state | 1027.8 | 1033.8 | 3434 (code) + 1036 (data) | 368 (in/out) + 188 (stack) |
-| Constant-time bitsliced AES-128 encryption/decryption in CTR mode | 1616.6 | 1617.6 | 12120 (code) + 12 (data) | 368+2m (in/out) + 108 (stack) |
-| Masked constant-time bitsliced AES-128 encryption/decryption in CTR mode | N/A | 2132.51 (generating randomness) + 5290.1 (rest) | 39916 (code) + 12 (data) | 368+2m (in/out) + 1312 (storing randomness) + 276 (stack rest) |  
+| Constant-time bitsliced AES-128 encryption/decryption in CTR mode | 1618.6 | 1619.6 | 11806 (code) + 12 (data) | 368+2m (in/out) + 108 (stack) |
+| Masked constant-time bitsliced AES-128 encryption/decryption in CTR mode | N/A | 2132.51 (generating randomness) + 5291.6 (rest) | 39224 (code) + 12 (data) | 368+2m (in/out) + 1312 (storing randomness) + 276 (stack rest) |  
 
 # Compilation
 All implementations come with Makefiles for the STM32L100C and STM32F407. This project uses the [libopencm3](https://github.com/libopencm3/libopencm3) firmware and the [arm-none-eabi toolchain](https://launchpad.net/gcc-arm-embedded). See, e.g., [this repository](https://github.com/joostrijneveld/STM32-getting-started) for more detailed instructions on getting those to work. Make sure the paths are set up correctly in the Makefiles. The implementations include examples in C on how to call the functions written in Thumb-2 assembly. Compile by executing `make`.

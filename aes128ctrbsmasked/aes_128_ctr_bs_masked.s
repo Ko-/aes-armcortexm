@@ -1669,7 +1669,7 @@ generate_random:
     and r10, r10,  r4    //Exec u4 = t25m & t27; into r10
     str.w  r4, [sp, #20  ] //Store r4/t27 on stack
     eor  r0, r12,  r0    //Exec t31 = t22 ^ t26; into r0
-    ldr  r4, [sp, #1456] //Exec t28 = rand() % 2; into r4
+    ldr.w  r4, [sp, #1456] //Exec t28 = rand() % 2; into r4
     eor r14, r14,  r4    //Exec u1 = u0 ^ t28; into r14
     eor r14, r14,  r8    //Exec u3 = u1 ^ u2; into r14
     eor r10, r14, r10    //Exec u5 = u3 ^ u4; into r10
@@ -2719,7 +2719,7 @@ generate_random:
     and r10, r10,  r4    //Exec u4 = t25m & t27; into r10
     str.w  r4, [sp, #20  ] //Store r4/t27 on stack
     eor  r0, r12,  r0    //Exec t31 = t22 ^ t26; into r0
-    ldr  r4, [sp, #1328] //Exec t28 = rand() % 2; into r4
+    ldr.w  r4, [sp, #1328] //Exec t28 = rand() % 2; into r4
     eor r14, r14,  r4    //Exec u1 = u0 ^ t28; into r14
     eor r14, r14,  r8    //Exec u3 = u1 ^ u2; into r14
     eor r10, r14, r10    //Exec u5 = u3 ^ u4; into r10
@@ -3769,7 +3769,7 @@ generate_random:
     and r10, r10,  r4    //Exec u4 = t25m & t27; into r10
     str.w  r4, [sp, #20  ] //Store r4/t27 on stack
     eor  r0, r12,  r0    //Exec t31 = t22 ^ t26; into r0
-    ldr  r4, [sp, #1200] //Exec t28 = rand() % 2; into r4
+    ldr.w  r4, [sp, #1200] //Exec t28 = rand() % 2; into r4
     eor r14, r14,  r4    //Exec u1 = u0 ^ t28; into r14
     eor r14, r14,  r8    //Exec u3 = u1 ^ u2; into r14
     eor r10, r14, r10    //Exec u5 = u3 ^ u4; into r10
@@ -4819,7 +4819,7 @@ generate_random:
     and r10, r10,  r4    //Exec u4 = t25m & t27; into r10
     str.w  r4, [sp, #20  ] //Store r4/t27 on stack
     eor  r0, r12,  r0    //Exec t31 = t22 ^ t26; into r0
-    ldr  r4, [sp, #1072] //Exec t28 = rand() % 2; into r4
+    ldr.w  r4, [sp, #1072] //Exec t28 = rand() % 2; into r4
     eor r14, r14,  r4    //Exec u1 = u0 ^ t28; into r14
     eor r14, r14,  r8    //Exec u3 = u1 ^ u2; into r14
     eor r10, r14, r10    //Exec u5 = u3 ^ u4; into r10
@@ -5869,7 +5869,7 @@ generate_random:
     and r10, r10,  r4    //Exec u4 = t25m & t27; into r10
     str.w  r4, [sp, #20  ] //Store r4/t27 on stack
     eor  r0, r12,  r0    //Exec t31 = t22 ^ t26; into r0
-    ldr  r4, [sp, #944 ] //Exec t28 = rand() % 2; into r4
+    ldr.w  r4, [sp, #944 ] //Exec t28 = rand() % 2; into r4
     eor r14, r14,  r4    //Exec u1 = u0 ^ t28; into r14
     eor r14, r14,  r8    //Exec u3 = u1 ^ u2; into r14
     eor r10, r14, r10    //Exec u5 = u3 ^ u4; into r10
@@ -6919,7 +6919,7 @@ generate_random:
     and r10, r10,  r4    //Exec u4 = t25m & t27; into r10
     str.w  r4, [sp, #20  ] //Store r4/t27 on stack
     eor  r0, r12,  r0    //Exec t31 = t22 ^ t26; into r0
-    ldr  r4, [sp, #816 ] //Exec t28 = rand() % 2; into r4
+    ldr.w  r4, [sp, #816 ] //Exec t28 = rand() % 2; into r4
     eor r14, r14,  r4    //Exec u1 = u0 ^ t28; into r14
     eor r14, r14,  r8    //Exec u3 = u1 ^ u2; into r14
     eor r10, r14, r10    //Exec u5 = u3 ^ u4; into r10
@@ -7969,7 +7969,7 @@ generate_random:
     and r10, r10,  r4    //Exec u4 = t25m & t27; into r10
     str.w  r4, [sp, #20  ] //Store r4/t27 on stack
     eor  r0, r12,  r0    //Exec t31 = t22 ^ t26; into r0
-    ldr  r4, [sp, #688 ] //Exec t28 = rand() % 2; into r4
+    ldr.w  r4, [sp, #688 ] //Exec t28 = rand() % 2; into r4
     eor r14, r14,  r4    //Exec u1 = u0 ^ t28; into r14
     eor r14, r14,  r8    //Exec u3 = u1 ^ u2; into r14
     eor r10, r14, r10    //Exec u5 = u3 ^ u4; into r10
@@ -9019,7 +9019,7 @@ generate_random:
     and r10, r10,  r4    //Exec u4 = t25m & t27; into r10
     str.w  r4, [sp, #20  ] //Store r4/t27 on stack
     eor  r0, r12,  r0    //Exec t31 = t22 ^ t26; into r0
-    ldr  r4, [sp, #560 ] //Exec t28 = rand() % 2; into r4
+    ldr.w  r4, [sp, #560 ] //Exec t28 = rand() % 2; into r4
     eor r14, r14,  r4    //Exec u1 = u0 ^ t28; into r14
     eor r14, r14,  r8    //Exec u3 = u1 ^ u2; into r14
     eor r10, r14, r10    //Exec u5 = u3 ^ u4; into r10
@@ -10069,7 +10069,7 @@ generate_random:
     and r10, r10,  r4    //Exec u4 = t25m & t27; into r10
     str.w  r4, [sp, #20  ] //Store r4/t27 on stack
     eor  r0, r12,  r0    //Exec t31 = t22 ^ t26; into r0
-    ldr  r4, [sp, #432 ] //Exec t28 = rand() % 2; into r4
+    ldr.w  r4, [sp, #432 ] //Exec t28 = rand() % 2; into r4
     eor r14, r14,  r4    //Exec u1 = u0 ^ t28; into r14
     eor r14, r14,  r8    //Exec u3 = u1 ^ u2; into r14
     eor r10, r14, r10    //Exec u5 = u3 ^ u4; into r10
@@ -11119,7 +11119,7 @@ generate_random:
     and r10, r10,  r4    //Exec u4 = t25m & t27; into r10
     str.w  r4, [sp, #20  ] //Store r4/t27 on stack
     eor  r0, r12,  r0    //Exec t31 = t22 ^ t26; into r0
-    ldr  r4, [sp, #304 ] //Exec t28 = rand() % 2; into r4
+    ldr.w  r4, [sp, #304 ] //Exec t28 = rand() % 2; into r4
     eor r14, r14,  r4    //Exec u1 = u0 ^ t28; into r14
     eor r14, r14,  r8    //Exec u3 = u1 ^ u2; into r14
     eor r10, r14, r10    //Exec u5 = u3 ^ u4; into r10
