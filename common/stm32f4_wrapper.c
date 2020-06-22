@@ -18,7 +18,7 @@ const struct rcc_clock_scale myclock = {
 
 void clock_setup(void)
 {
-    rcc_clock_setup_hse_3v3(&myclock);
+    rcc_clock_setup_pll(&myclock);
     rcc_periph_clock_enable(RCC_GPIOA);
     rcc_periph_clock_enable(RCC_USART2);
     rcc_periph_clock_enable(RCC_CCMDATARAM);
@@ -47,8 +47,8 @@ void usart_setup(int baud)
 
 void flash_setup(void)
 {
-    FLASH_ACR |= FLASH_ACR_ICE;
-    FLASH_ACR |= FLASH_ACR_DCE;
+    FLASH_ACR |= FLASH_ACR_ICEN;
+    FLASH_ACR |= FLASH_ACR_DCEN;
     FLASH_ACR |= FLASH_ACR_PRFTEN;
 }
 

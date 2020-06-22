@@ -7,7 +7,7 @@ OBJCOPY	= $(PREFIX)-objcopy
 OBJDUMP	= $(PREFIX)-objdump
 GDB		= $(PREFIX)-gdb
 
-OPENCM3DIR = /usr/arm-none-eabi
+OPENCM3DIR = ../libopencm3/
 ARMNONEEABIDIR = /usr/arm-none-eabi
 COMMONDIR = ../common
 
@@ -37,7 +37,7 @@ CFLAGS		+= -O3 \
 		   -fno-common $(ARCH_FLAGS) -MD
 LDFLAGS		+= --static -Wl,--start-group -lc -lgcc -lnosys -Wl,--end-group \
 		   -T$(LDSCRIPT) -nostartfiles -Wl,--gc-sections,--no-print-gc-sections \
-		   $(ARCH_FLAGS)
+		   $(ARCH_FLAGS) -L$(OPENCM3DIR)/lib
 
 OBJS		+= aes_256_ctr.s
 
