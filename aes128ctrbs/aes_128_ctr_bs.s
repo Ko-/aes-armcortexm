@@ -45,7 +45,7 @@ AES_Sbox:
 AES_128_keyschedule:
 
     //function prologue, preserve registers
-    push {r0,r4-r12,r14}
+    push {r0,r4-r11,r14}
 
     //first we are going to expand the full key and push it to the stack
     //then we do a reversed second pass, bitslice and store to rk
@@ -1234,7 +1234,7 @@ AES_128_keyschedule:
     stmdb r1!, {r4-r11}
 
     //function epilogue, restore state
-    pop {r4-r12,r14}
+    pop {r4-r11,r14}
     bx lr
 
 .align 2
@@ -1253,7 +1253,7 @@ AES_bsconst:
 AES_128_encrypt_ctr:
 
     //function prologue, preserve registers
-    push {r0-r12,r14}
+    push {r0-r11,r14}
 
     adr r14, AES_bsconst
     sub sp, #52
@@ -4641,6 +4641,6 @@ encrypt_blocks: //expect p in r0, AES_bsconst in r14
 exit:
     //function epilogue, restore state
     add sp, #68
-    pop {r4-r12,r14}
+    pop {r4-r11,r14}
     bx lr
 

@@ -369,7 +369,7 @@ AES_128_keyschedule:
 AES_128_encrypt:
 
     //function prologue, preserve registers and free r2
-    push {r2,r4-r12,r14}
+    push {r2,r4-r11,r14}
 
     //load input
     ldm r1, {r4-r7} //r1 now free to overwrite
@@ -952,7 +952,7 @@ AES_128_encrypt:
     stm r4, {r0-r3}
 
     //function epilogue, restore state
-    pop {r4-r12,r14}
+    pop {r4-r11,r14}
     bx lr
 
 
@@ -1998,7 +1998,7 @@ AES_128_keyschedule_dec:
 AES_128_decrypt:
 
     //function prologue, preserve registers and free r2
-    push {r2,r4-r12,r14}
+    push {r2,r4-r11,r14}
 
     //load input
     ldm r1, {r4-r7} //r1 now free to overwrite
@@ -2581,6 +2581,6 @@ AES_128_decrypt:
     stm r2, {r4-r7}
 
     //function epilogue, restore state
-    pop {r4-r12,r14}
+    pop {r4-r11,r14}
     bx lr
 

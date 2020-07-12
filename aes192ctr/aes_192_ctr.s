@@ -343,7 +343,7 @@ AES_192_keyschedule:
 AES_192_encrypt_ctr:
 
     //function prologue, preserve registers
-    push {r1-r12,r14}
+    push {r1-r11,r14}
 
     mov.w r14, r0
 
@@ -1110,6 +1110,6 @@ encrypt_first:
 exit:
     //function epilogue, restore state
     add sp, #32
-    pop {r4-r12,r14}
+    pop {r4-r11,r14}
     bx lr
 
