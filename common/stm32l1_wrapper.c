@@ -1,8 +1,23 @@
 #include "stm32wrapper.h"
 
+/* 16 MHz */
+const struct rcc_clock_scale benchmarkclock = {
+    .pll_source = RCC_CFGR_PLLSRC_HSI_CLK,
+    .pll_mul = RCC_CFGR_PLLMUL_MUL3,
+    .pll_div = RCC_CFGR_PLLDIV_DIV3,
+    .hpre = RCC_CFGR_HPRE_SYSCLK_NODIV,
+    .ppre1 = RCC_CFGR_PPRE1_HCLK_NODIV,
+    .ppre2 = RCC_CFGR_PPRE2_HCLK_NODIV,
+    .voltage_scale = PWR_SCALE1,
+    .flash_waitstates = 0,
+    .ahb_frequency = 16000000,
+    .apb1_frequency = 16000000,
+    .apb2_frequency = 16000000,
+};
+
 void clock_setup(void)
 {
-    rcc_clock_setup_pll(&rcc_clock_config[RCC_CLOCK_VRANGE1_HSI_RAW_16MHZ]);
+    rcc_clock_setup_pll(&benchmarkclock);
     rcc_periph_clock_enable(RCC_GPIOA);
     rcc_periph_clock_enable(RCC_USART2);
 
