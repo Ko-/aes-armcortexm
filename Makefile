@@ -1,6 +1,6 @@
 .PHONY: all clean
 
-DIRS=aes128 aes128ctr aes192ctr aes256ctr aes128ctrbs aes128ctrbsmasked
+DIRS=libopencm3 aes128 aes128ctr aes192ctr aes256ctr aes128ctrbs aes128ctrbsmasked
 COMMONDIR=common
 
 all clean:
