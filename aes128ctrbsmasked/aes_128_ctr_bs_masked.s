@@ -1277,7 +1277,7 @@ encrypt_blocks: //expect p in r0, RNG_SR in r12, AES_bsconst in r14
 generate_random:
     ldr r6, [r12]
     tst r6, r7
-    bne generate_random //wait until RNG_SR == RNG_SR_DRDY
+    beq generate_random //wait until RNG_SR == RNG_SR_DRDY
     ldr.w r6, [r5]
     str r6, [r3, r4, lsl #2]
     subs r4, #1
