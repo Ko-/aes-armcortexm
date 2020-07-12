@@ -1,30 +1,32 @@
 #include "stm32wrapper.h"
 
 /* 24 MHz */
-const struct rcc_clock_scale myclock = {
-    //HSE = 8 MHz
-    .pllm = 8, //VCOin = HSE / PLLM = 1 MHz
-    .plln = 192, //VCOout = VCOin * PLLN = 192 MHz
-    .pllp = 8, //PLLCLK = VCOout / PLLP = 24 MHz (low to have 0WS)
-    .pllq = 4, //PLL48CLK = VCOout / PLLQ = 48 MHz (required for USB, RNG)
-    .hpre = RCC_CFGR_HPRE_DIV_NONE,
-    .ppre1 = RCC_CFGR_PPRE_DIV_2,
-    .ppre2 = RCC_CFGR_PPRE_DIV_NONE,
-    .flash_config = FLASH_ACR_LATENCY_0WS,
-    .apb1_frequency = 12000000,
-    .apb2_frequency = 24000000,
+const struct rcc_clock_scale benchmarkclock = {
+  .pllm = 8, //VCOin = HSE / PLLM = 1 MHz
+  .plln = 192, //VCOout = VCOin * PLLN = 192 MHz
+  .pllp = 8, //PLLCLK = VCOout / PLLP = 24 MHz (low to have 0WS)
+  .pllq = 4, //PLL48CLK = VCOout / PLLQ = 48 MHz (required for USB, RNG)
+  .pllr = 0,
+  .hpre = RCC_CFGR_HPRE_DIV_NONE,
+  .ppre1 = RCC_CFGR_PPRE_DIV_2,
+  .ppre2 = RCC_CFGR_PPRE_DIV_NONE,
+  .pll_source = RCC_CFGR_PLLSRC_HSE_CLK,
+  .voltage_scale = PWR_SCALE1,
+  .flash_config = FLASH_ACR_DCEN | FLASH_ACR_ICEN | FLASH_ACR_LATENCY_0WS,
+  .ahb_frequency = 24000000,
+  .apb1_frequency = 12000000,
+  .apb2_frequency = 24000000,
 };
-
 
 void clock_setup(void)
 {
-    rcc_clock_setup_pll(&myclock);
+    rcc_clock_setup_pll(&benchmarkclock);
     rcc_periph_clock_enable(RCC_GPIOA);
     rcc_periph_clock_enable(RCC_USART2);
     rcc_periph_clock_enable(RCC_CCMDATARAM);
-#ifdef NEEDS_RNG
     rcc_periph_clock_enable(RCC_RNG);
-#endif
+
+    flash_prefetch_enable();
 }
 
 void gpio_setup(void)
@@ -43,13 +45,6 @@ void usart_setup(int baud)
     usart_set_flow_control(USART2, USART_FLOWCONTROL_NONE);
 
     usart_enable(USART2);
-}
-
-void flash_setup(void)
-{
-    FLASH_ACR |= FLASH_ACR_ICEN;
-    FLASH_ACR |= FLASH_ACR_DCEN;
-    FLASH_ACR |= FLASH_ACR_PRFTEN;
 }
 
 void send_USART_str(const char* in)

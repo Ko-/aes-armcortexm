@@ -1,5 +1,3 @@
-#define NEEDS_RNG
-
 #include "../common/stm32wrapper.h"
 #include <stdio.h>
 #include <stdint.h>
@@ -21,7 +19,6 @@ int main(void)
     clock_setup();
     gpio_setup();
     usart_setup(115200);
-    flash_setup();
     srand(42);
 
     // plainly reading from CYCCNT is more efficient than using the

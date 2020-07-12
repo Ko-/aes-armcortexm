@@ -8,14 +8,13 @@
 #include <libopencm3/cm3/dwt.h>
 #include <libopencm3/stm32/flash.h>
 
-#ifdef NEEDS_RNG
-#include <libopencm3/stm32/f4/rng.h>
+#ifdef STM32F4
+#include <libopencm3/stm32/rng.h>
 #endif
 
 void clock_setup(void);
 void gpio_setup(void);
 void usart_setup(int baud);
-void flash_setup(void);
 void send_USART_str(const char* in);
 void send_USART_bytes(const unsigned char* in, int n);
 

@@ -1,5 +1,3 @@
-#define NEEDS_RNG
-
 #include "../common/stm32wrapper.h"
 #include <stdio.h>
 #include <stdint.h>
@@ -20,7 +18,6 @@ int main(void)
     clock_setup();
     gpio_setup();
     usart_setup(115200);
-    flash_setup();
 
     // plainly reading from CYCCNT is more efficient than using the
     // dwt_read_cycle_counter() interface offered by libopencm3,
@@ -33,7 +30,7 @@ int main(void)
 #ifdef STM32F4
     RNG_CR |= RNG_CR_RNGEN;
 #endif
-    
+
     const uint32_t LEN = 3*16;
     const uint32_t LEN_ROUNDED = ((LEN+31)/32)*32;
 
@@ -44,11 +41,11 @@ int main(void)
     //const uint8_t key[16] = {4,5,6,7,4,5,6,8,4,5,6,9,4,5,6,10};
     //uint8_t in[LEN];
     uint8_t out[LEN_ROUNDED];
-    
+
     unsigned int i;
     //for(i=0;i<LEN;++i)
     //    in[i] = i%256;
-    
+
     char buffer[36];
     param p;
     //p.ctr = 0;
@@ -71,14 +68,14 @@ int main(void)
     }
 
 
-    sprintf(buffer, "cyc: %d", cyclecount); 
+    sprintf(buffer, "cyc: %d", cyclecount);
     send_USART_str(buffer);
 
     oldcount = DWT_CYCCNT;
     AES_128_encrypt_ctr(&p, in, out, LEN);
     cyclecount = DWT_CYCCNT-oldcount;
-  
-    sprintf(buffer, "cyc: %d", cyclecount); 
+
+    sprintf(buffer, "cyc: %d", cyclecount);
     send_USART_str(buffer);
 
 
@@ -93,7 +90,7 @@ int main(void)
     if(LEN%16 > 0)
         send_USART_str(buffer);
 
-    
+
 /*
     // Perform decryption
     p.ctr = 0;

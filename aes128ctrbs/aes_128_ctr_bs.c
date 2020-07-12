@@ -19,7 +19,6 @@ int main(void)
     clock_setup();
     gpio_setup();
     usart_setup(115200);
-    flash_setup();
     srand(42);
 
     // plainly reading from CYCCNT is more efficient than using the

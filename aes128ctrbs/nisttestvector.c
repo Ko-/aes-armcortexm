@@ -18,7 +18,6 @@ int main(void)
     clock_setup();
     gpio_setup();
     usart_setup(115200);
-    flash_setup();
 
     // plainly reading from CYCCNT is more efficient than using the
     // dwt_read_cycle_counter() interface offered by libopencm3,
@@ -27,7 +26,7 @@ int main(void)
     SCS_DEMCR |= SCS_DEMCR_TRCENA;
     DWT_CYCCNT = 0;
     DWT_CTRL |= DWT_CTRL_CYCCNTENA;
-    
+
     const uint32_t LEN = 3*16;
     const uint32_t LEN_ROUNDED = ((LEN+31)/32)*32;
 
@@ -38,11 +37,11 @@ int main(void)
     uint8_t key[16] = {0x2b,0x7e,0x15,0x16,0x28,0xae,0xd2,0xa6,0xab,0xf7,0x15,0x88,0x09,0xcf,0x4f,0x3c};
     uint8_t in[48] = {0};
     uint8_t out[LEN_ROUNDED];
-    
+
     unsigned int i;
     //for(i=0;i<LEN;++i)
     //    in[i] = i%256;
-    
+
     char buffer[36];
     param p;
     //p.ctr = 0;
@@ -65,14 +64,14 @@ int main(void)
     }
 
 
-    sprintf(buffer, "cyc: %d", cyclecount); 
+    sprintf(buffer, "cyc: %d", cyclecount);
     send_USART_str(buffer);
 
     oldcount = DWT_CYCCNT;
     AES_128_encrypt_ctr(&p, in, out, LEN);
     cyclecount = DWT_CYCCNT-oldcount;
-  
-    sprintf(buffer, "cyc: %d", cyclecount); 
+
+    sprintf(buffer, "cyc: %d", cyclecount);
     send_USART_str(buffer);
 
 
@@ -87,7 +86,7 @@ int main(void)
     if(LEN%16 > 0)
         send_USART_str(buffer);
 
-    
+
 /*
     // Perform decryption
     p.ctr = 0;
