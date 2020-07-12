@@ -385,20 +385,19 @@ partial_precompute: //expect p in r14
     ldmia r14!, {r4-r11}
 
     //initial addroundkey
-    eor r4, r8 //0xf3f2f1f0 ^ 0x16157e2b
+    eor r4, r8
     eor r5, r9
     eor r6, r10
     eor r7, r11
-    and r7, r7, #0xffffff
-    //0xe5e78f00
+    and r4, r4, #0xffffff00
 
     //round 1
 
     ldmia r14!, {r8-r11} //rk[4]-rk[7]
-    uxtb r0, r4 //00
-    uxtb r1, r5 //dc
-    uxtb r2, r6 //53
-    uxtb r3, r7 //f5
+    uxtb r0, r4
+    uxtb r1, r5
+    uxtb r2, r6
+    uxtb r3, r7
     ldr r0, [r12, r0, lsl #2]
     ldr r1, [r12, r1, lsl #2]
     ldr r2, [r12, r2, lsl #2]
@@ -447,17 +446,16 @@ partial_precompute: //expect p in r14
     eor r9, r9, r1, ror #24
     eor r10, r10, r2, ror #24
     eor r11, r11, r4, ror #24
-    eor r1, r11, r3, ror #16
+    eor r1, r8, r3, ror #16
     push.w {r1}
-    //0xad10dc1a
 
     //round 2
 
     ldmia r14!, {r4-r7} //rk[8]-rk[11]
 
-    uxtb r0, r8
-    uxtb r1, r9
-    uxtb r2, r10
+    uxtb r0, r9
+    uxtb r1, r10
+    uxtb r2, r11
     ldr r0, [r12, r0, lsl #2]
     ldr r1, [r12, r1, lsl #2]
     ldr r2, [r12, r2, lsl #2]
@@ -466,9 +464,9 @@ partial_precompute: //expect p in r14
     eor r6, r6, r1, ror #16
     eor r7, r7, r2, ror #16
 
-    uxtb r0, r8, ror #8
-    uxtb r1, r9, ror #8
-    uxtb r2, r10, ror #8
+    uxtb r0, r9, ror #8
+    uxtb r1, r10, ror #8
+    uxtb r2, r11, ror #8
     ldr r0, [r12, r0, lsl #2]
     ldr r1, [r12, r1, lsl #2]
     ldr r2, [r12, r2, lsl #2]
@@ -477,9 +475,9 @@ partial_precompute: //expect p in r14
     eor r6, r6, r2, ror #8
     eor r7, r7, r3, ror #8
 
-    uxtb r0, r9, ror #16
-    uxtb r1, r10, ror #16
-    uxtb r2, r8, ror #16
+    uxtb r0, r10, ror #16
+    uxtb r1, r11, ror #16
+    uxtb r2, r9, ror #16
     ldr r0, [r12, r0, lsl #2]
     ldr r1, [r12, r1, lsl #2]
     ldr r2, [r12, r2, lsl #2]
@@ -488,9 +486,9 @@ partial_precompute: //expect p in r14
     eor r6, r3
     eor r7, r2
 
-    uxtb r0, r10, ror #24
-    uxtb r1, r8, ror #24
-    uxtb r2, r9, ror #24
+    uxtb r0, r11, ror #24
+    uxtb r1, r9, ror #24
+    uxtb r2, r10, ror #24
     ldr r0, [r12, r0, lsl #2]
     ldr r1, [r12, r1, lsl #2]
     ldr r2, [r12, r2, lsl #2]
@@ -504,7 +502,6 @@ partial_precompute: //expect p in r14
     eor r6, r3
     eor r7, r7, r3, ror #8
     push.w {r4-r7}
-//0x73df8cec, 0xb07c6098, 0x7516d2f2, 0xe4a19eea
     //load precomputed_x0
     ldr r10, [sp, #16]
     //the first time, we can skip some loads
@@ -518,14 +515,13 @@ encrypt_block: //expect {precomputed_x0, precomputed_y0..y3} on top of stack, p+
     ldm sp, {r4-r7,r10}
 encrypt_first:
     //load ctr
-    ldr r8, [r14, #-52]
-    //load key[3]
-    ldr r9, [r14, #-36]
+    ldr r8, [r14, #-64]
+    //load key[0]
+    ldr r9, [r14, #-48]
 
     //round 1
     eor r8, r9
-    //and r8, r8, #0xff000000
-    lsr r8, #24
+    and r8, #0xff
     ldr r8, [r12, r8, lsl #2]
     eor r10, r10, r8, ror #16
 
@@ -1015,9 +1011,7 @@ encrypt_first:
     //load, inc, store ctrnonce
     sub r14, #128 //reset to p+4*4*4, as required by encrypt_block
     ldr r4, [r14, #-64]
-    //rev r4, r4
     add r4, #1
-    //rev r4, r4
     str r4, [r14, #-64]
 
     //if ctrnonce%256==0: partial_precompute
@@ -1033,4 +1027,3 @@ exit:
     add sp, #32
     pop {r4-r11,r14}
     bx lr
-
