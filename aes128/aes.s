@@ -926,7 +926,7 @@ AES_128_encrypt:
     bfi r5, r1, #8, #8
     bfi r6, r2, #8, #8
     bfi r7, r3, #8, #8
-    
+
     uxtb r0, r9, ror #8
     uxtb r1, r10, ror #8
     uxtb r2, r11, ror #8
@@ -941,13 +941,13 @@ AES_128_encrypt:
     bfi r7, r3, #16, #8
 
     ldmia r14!, {r0-r3} //rk[40]-rk[43]
-    
+
     eor r0, r0, r4, ror #8
     eor r1, r1, r5, ror #8
     eor r2, r2, r6, ror #8
     pop.w {r4}
     eor r3, r3, r7, ror #8
-    
+
     //write output
     stm r4, {r0-r3}
 
@@ -1308,7 +1308,7 @@ AES_128_keyschedule_dec:
     str r5, [r1, #4]
     str r6, [r1, #8]
     str r7, [r1, #12]
-    
+
     //now start doing InvMixColumns
     //meanwhile, reverse the round keys
 
@@ -1346,7 +1346,7 @@ AES_128_keyschedule_dec:
     eor r5, r5, r10, ror #24
     eor r5, r5, r11, ror #16
     eor r5, r5, r8, ror #8
-    
+
     uxtb r8, r6, ror #8
     uxtb r9, r6, ror #16
     uxtb r10, r6, ror #24
@@ -1362,7 +1362,7 @@ AES_128_keyschedule_dec:
     eor r6, r6, r10, ror #24
     eor r6, r6, r11, ror #16
     eor r6, r6, r8, ror #8
-    
+
     uxtb r8, r7, ror #8
     uxtb r9, r7, ror #16
     uxtb r10, r7, ror #24
@@ -1420,7 +1420,7 @@ AES_128_keyschedule_dec:
     eor r5, r5, r10, ror #24
     eor r5, r5, r11, ror #16
     eor r5, r5, r8, ror #8
-    
+
     uxtb r8, r6, ror #8
     uxtb r9, r6, ror #16
     uxtb r10, r6, ror #24
@@ -1436,7 +1436,7 @@ AES_128_keyschedule_dec:
     eor r6, r6, r10, ror #24
     eor r6, r6, r11, ror #16
     eor r6, r6, r8, ror #8
-    
+
     uxtb r8, r7, ror #8
     uxtb r9, r7, ror #16
     uxtb r10, r7, ror #24
@@ -1459,7 +1459,7 @@ AES_128_keyschedule_dec:
     str r5, [r1, #36]
     str r6, [r1, #40]
     str r7, [r1, #44]
-   
+
     //round 7
     pop.w {r4-r7}
 
@@ -1494,7 +1494,7 @@ AES_128_keyschedule_dec:
     eor r5, r5, r10, ror #24
     eor r5, r5, r11, ror #16
     eor r5, r5, r8, ror #8
-    
+
     uxtb r8, r6, ror #8
     uxtb r9, r6, ror #16
     uxtb r10, r6, ror #24
@@ -1510,7 +1510,7 @@ AES_128_keyschedule_dec:
     eor r6, r6, r10, ror #24
     eor r6, r6, r11, ror #16
     eor r6, r6, r8, ror #8
-    
+
     uxtb r8, r7, ror #8
     uxtb r9, r7, ror #16
     uxtb r10, r7, ror #24
@@ -1526,14 +1526,14 @@ AES_128_keyschedule_dec:
     eor r7, r7, r10, ror #24
     eor r7, r7, r11, ror #16
     eor r7, r7, r8, ror #8
-    
+
     //write to memory
     //stmia.w r1!, {r4-r7} is slower if we can use encoding T1!
     str r4, [r1, #48]
     str r5, [r1, #52]
     str r6, [r1, #56]
     str r7, [r1, #60]
-    
+
     //round 6
     pop.w {r4-r7}
 
@@ -1568,7 +1568,7 @@ AES_128_keyschedule_dec:
     eor r5, r5, r10, ror #24
     eor r5, r5, r11, ror #16
     eor r5, r5, r8, ror #8
-    
+
     uxtb r8, r6, ror #8
     uxtb r9, r6, ror #16
     uxtb r10, r6, ror #24
@@ -1584,7 +1584,7 @@ AES_128_keyschedule_dec:
     eor r6, r6, r10, ror #24
     eor r6, r6, r11, ror #16
     eor r6, r6, r8, ror #8
-    
+
     uxtb r8, r7, ror #8
     uxtb r9, r7, ror #16
     uxtb r10, r7, ror #24
@@ -1600,7 +1600,7 @@ AES_128_keyschedule_dec:
     eor r7, r7, r10, ror #24
     eor r7, r7, r11, ror #16
     eor r7, r7, r8, ror #8
-    
+
 
     //write to memory
     //stmia.w r1!, {r4-r7} is slower if we can use encoding T1!
@@ -1608,7 +1608,7 @@ AES_128_keyschedule_dec:
     str r5, [r1, #68]
     str r6, [r1, #72]
     str r7, [r1, #76]
-    
+
     //round 5
     pop.w {r4-r7}
 
@@ -1643,7 +1643,7 @@ AES_128_keyschedule_dec:
     eor r5, r5, r10, ror #24
     eor r5, r5, r11, ror #16
     eor r5, r5, r8, ror #8
-    
+
     uxtb r8, r6, ror #8
     uxtb r9, r6, ror #16
     uxtb r10, r6, ror #24
@@ -1659,7 +1659,7 @@ AES_128_keyschedule_dec:
     eor r6, r6, r10, ror #24
     eor r6, r6, r11, ror #16
     eor r6, r6, r8, ror #8
-    
+
     uxtb r8, r7, ror #8
     uxtb r9, r7, ror #16
     uxtb r10, r7, ror #24
@@ -1675,7 +1675,7 @@ AES_128_keyschedule_dec:
     eor r7, r7, r10, ror #24
     eor r7, r7, r11, ror #16
     eor r7, r7, r8, ror #8
-    
+
 
     //write to memory
     //stmia.w r1!, {r4-r7} is slower if we can use encoding T1!
@@ -1683,7 +1683,7 @@ AES_128_keyschedule_dec:
     str r5, [r1, #84]
     str r6, [r1, #88]
     str r7, [r1, #92]
-    
+
     //round 4
     pop.w {r4-r7}
 
@@ -1718,7 +1718,7 @@ AES_128_keyschedule_dec:
     eor r5, r5, r10, ror #24
     eor r5, r5, r11, ror #16
     eor r5, r5, r8, ror #8
-    
+
     uxtb r8, r6, ror #8
     uxtb r9, r6, ror #16
     uxtb r10, r6, ror #24
@@ -1734,7 +1734,7 @@ AES_128_keyschedule_dec:
     eor r6, r6, r10, ror #24
     eor r6, r6, r11, ror #16
     eor r6, r6, r8, ror #8
-    
+
     uxtb r8, r7, ror #8
     uxtb r9, r7, ror #16
     uxtb r10, r7, ror #24
@@ -1750,7 +1750,7 @@ AES_128_keyschedule_dec:
     eor r7, r7, r10, ror #24
     eor r7, r7, r11, ror #16
     eor r7, r7, r8, ror #8
-    
+
 
     //write to memory
     //stmia.w r1!, {r4-r7} is slower if we can use encoding T1!
@@ -1758,7 +1758,7 @@ AES_128_keyschedule_dec:
     str r5, [r1, #100]
     str r6, [r1, #104]
     str r7, [r1, #108]
-    
+
     //round 3
     pop.w {r4-r7}
 
@@ -1793,7 +1793,7 @@ AES_128_keyschedule_dec:
     eor r5, r5, r10, ror #24
     eor r5, r5, r11, ror #16
     eor r5, r5, r8, ror #8
-    
+
     uxtb r8, r6, ror #8
     uxtb r9, r6, ror #16
     uxtb r10, r6, ror #24
@@ -1809,7 +1809,7 @@ AES_128_keyschedule_dec:
     eor r6, r6, r10, ror #24
     eor r6, r6, r11, ror #16
     eor r6, r6, r8, ror #8
-    
+
     uxtb r8, r7, ror #8
     uxtb r9, r7, ror #16
     uxtb r10, r7, ror #24
@@ -1825,7 +1825,7 @@ AES_128_keyschedule_dec:
     eor r7, r7, r10, ror #24
     eor r7, r7, r11, ror #16
     eor r7, r7, r8, ror #8
-    
+
 
     //write to memory
     //stmia.w r1!, {r4-r7} is slower if we can use encoding T1!
@@ -1868,7 +1868,7 @@ AES_128_keyschedule_dec:
     eor r5, r5, r10, ror #24
     eor r5, r5, r11, ror #16
     eor r5, r5, r8, ror #8
-    
+
     uxtb r8, r6, ror #8
     uxtb r9, r6, ror #16
     uxtb r10, r6, ror #24
@@ -1884,7 +1884,7 @@ AES_128_keyschedule_dec:
     eor r6, r6, r10, ror #24
     eor r6, r6, r11, ror #16
     eor r6, r6, r8, ror #8
-    
+
     uxtb r8, r7, ror #8
     uxtb r9, r7, ror #16
     uxtb r10, r7, ror #24
@@ -1900,7 +1900,7 @@ AES_128_keyschedule_dec:
     eor r7, r7, r10, ror #24
     eor r7, r7, r11, ror #16
     eor r7, r7, r8, ror #8
-    
+
 
     //write to memory
     //stmia.w r1!, {r4-r7} is slower if we can use encoding T1!
@@ -1909,7 +1909,7 @@ AES_128_keyschedule_dec:
     str r5, [r1, #4]
     str r6, [r1, #8]
     str r7, [r1, #12]
-    
+
     //round 1
     pop.w {r4-r7}
 
@@ -1944,7 +1944,7 @@ AES_128_keyschedule_dec:
     eor r5, r5, r10, ror #24
     eor r5, r5, r11, ror #16
     eor r5, r5, r8, ror #8
-    
+
     uxtb r8, r6, ror #8
     uxtb r9, r6, ror #16
     uxtb r10, r6, ror #24
@@ -1960,7 +1960,7 @@ AES_128_keyschedule_dec:
     eor r6, r6, r10, ror #24
     eor r6, r6, r11, ror #16
     eor r6, r6, r8, ror #8
-    
+
     uxtb r8, r7, ror #8
     uxtb r9, r7, ror #16
     uxtb r10, r7, ror #24
@@ -1976,7 +1976,7 @@ AES_128_keyschedule_dec:
     eor r7, r7, r10, ror #24
     eor r7, r7, r11, ror #16
     eor r7, r7, r8, ror #8
-    
+
 
     //write to memory
     //stmia.w r1!, {r4-r7} is slower if we can use encoding T1!
@@ -2070,7 +2070,7 @@ AES_128_decrypt:
     eor r9, r9, r1, ror #24
     eor r10, r10, r2, ror #24
     eor r11, r11, r3, ror #24
-    
+
     //round 2
 
     ldmia r14!, {r4-r7} //rk[4]-rk[7]
