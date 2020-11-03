@@ -1217,6 +1217,19 @@ encrypt_first:
     ldr r6, [r12, r2, lsl #2]
     ldr r7, [r12, r3, lsl #2]
 
+    uxtb r0, r9, ror #8
+    uxtb r1, r10, ror #8
+    uxtb r2, r11, ror #8
+    uxtb r3, r8, ror #8
+    ldr r0, [r12, r0, lsl #2]
+    ldr r1, [r12, r1, lsl #2]
+    ldr r2, [r12, r2, lsl #2]
+    ldr r3, [r12, r3, lsl #2]
+    bfi r4, r0, #8, #8
+    bfi r5, r1, #8, #8
+    bfi r6, r2, #8, #8
+    bfi r7, r3, #8, #8
+
     uxtb r0, r10, ror #16
     uxtb r1, r11, ror #16
     uxtb r2, r8, ror #16
@@ -1243,18 +1256,6 @@ encrypt_first:
     bfi r6, r2, #24, #8
     bfi r7, r3, #24, #8
 
-    uxtb r0, r9, ror #8
-    uxtb r1, r10, ror #8
-    uxtb r2, r11, ror #8
-    uxtb r3, r8, ror #8
-    ldr r0, [r12, r0, lsl #2]
-    ldr r1, [r12, r1, lsl #2]
-    ldr r2, [r12, r2, lsl #2]
-    ldr r3, [r12, r3, lsl #2]
-    bfi r4, r0, #8, #8
-    bfi r5, r1, #8, #8
-    bfi r6, r2, #8, #8
-    bfi r7, r3, #8, #8
 
     ldmia r14!, {r0-r3} //rk[56]-rk[59]
 

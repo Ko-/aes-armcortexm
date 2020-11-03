@@ -892,28 +892,6 @@ AES_128_encrypt:
 
     //round 10
 
-    uxtb r0, r11, ror #24
-    uxtb r1, r8, ror #24
-    uxtb r2, r9, ror #24
-    uxtb r3, r10, ror #24
-    ldr r4, [r12, r0, lsl #2]
-    ldr r5, [r12, r1, lsl #2]
-    ldr r6, [r12, r2, lsl #2]
-    ldr r7, [r12, r3, lsl #2]
-
-    uxtb r0, r10, ror #16
-    uxtb r1, r11, ror #16
-    uxtb r2, r8, ror #16
-    uxtb r3, r9, ror #16
-    ldr r0, [r12, r0, lsl #2]
-    ldr r1, [r12, r1, lsl #2]
-    ldr r2, [r12, r2, lsl #2]
-    ldr r3, [r12, r3, lsl #2]
-    bfi r4, r0, #24, #8
-    bfi r5, r1, #24, #8
-    bfi r6, r2, #24, #8
-    bfi r7, r3, #24, #8
-
     uxtb r0, r8
     uxtb r1, r9
     uxtb r2, r10
@@ -922,10 +900,6 @@ AES_128_encrypt:
     ldr r1, [r12, r1, lsl #2]
     ldr r2, [r12, r2, lsl #2]
     ldr r3, [r12, r3, lsl #2]
-    bfi r4, r0, #8, #8
-    bfi r5, r1, #8, #8
-    bfi r6, r2, #8, #8
-    bfi r7, r3, #8, #8
 
     uxtb r0, r9, ror #8
     uxtb r1, r10, ror #8
@@ -935,18 +909,44 @@ AES_128_encrypt:
     ldr r1, [r12, r1, lsl #2]
     ldr r2, [r12, r2, lsl #2]
     ldr r3, [r12, r3, lsl #2]
+    bfi r4, r0, #8, #8
+    bfi r5, r1, #8, #8
+    bfi r6, r2, #8, #8
+    bfi r7, r3, #8, #8
+
+    uxtb r0, r10, ror #16
+    uxtb r1, r11, ror #16
+    uxtb r2, r8, ror #16
+    uxtb r3, r9, ror #16
+    ldr r0, [r12, r0, lsl #2]
+    ldr r1, [r12, r1, lsl #2]
+    ldr r2, [r12, r2, lsl #2]
+    ldr r3, [r12, r3, lsl #2]
     bfi r4, r0, #16, #8
     bfi r5, r1, #16, #8
     bfi r6, r2, #16, #8
     bfi r7, r3, #16, #8
 
+    uxtb r0, r11, ror #24
+    uxtb r1, r8, ror #24
+    uxtb r2, r9, ror #24
+    uxtb r3, r10, ror #24
+    ldr r4, [r12, r0, lsl #2]
+    ldr r5, [r12, r1, lsl #2]
+    ldr r6, [r12, r2, lsl #2]
+    ldr r7, [r12, r3, lsl #2]
+    bfi r4, r0, #24, #8
+    bfi r5, r1, #24, #8
+    bfi r6, r2, #24, #8
+    bfi r7, r3, #24, #8
+
     ldmia r14!, {r0-r3} //rk[40]-rk[43]
 
-    eor r0, r0, r4, ror #8
-    eor r1, r1, r5, ror #8
-    eor r2, r2, r6, ror #8
+    eor r0, r0, r4
+    eor r1, r1, r5
+    eor r2, r2, r6
     pop.w {r4}
-    eor r3, r3, r7, ror #8
+    eor r3, r3, r7
 
     //write output
     stm r4, {r0-r3}
