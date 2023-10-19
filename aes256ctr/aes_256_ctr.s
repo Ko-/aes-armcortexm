@@ -1,3 +1,6 @@
+# aes implementation by Ko- @ github ; https://github.com/Ko-/aes-armcortexm/blob/public/aes256ctr
+# CC0-1.0 license 
+# 2023-10-19 modification by rundekugel @ github.com: Increase counter also for data length with only 16 bytes.
 .syntax unified
 .thumb
 
@@ -1263,7 +1266,6 @@ encrypt_first:
     eor r6, r2
     eor r7, r3
 
-
     //load in, out, len counter
     add r8, sp, #20 //step over precomputed_*
     ldmia r8, {r1-r3}
@@ -1278,16 +1280,16 @@ encrypt_first:
     stmia r2!, {r4-r7}
     str r2, [sp, #24]
 
-    //dec and store len counter
-    subs r3, #16
-    ble exit //if len<=0: exit
-    str.w r3, [sp, #28]
-
     //load, inc, store ctrnonce
     sub r14, #192 //reset to p+4*4*4, as required by encrypt_block
     ldr r4, [r14, #-64]
     add r4, #1
     str r4, [r14, #-64]
+
+    //dec and store len counter
+    subs r3, #16
+    ble exit //if len<=0: exit
+    str.w r3, [sp, #28]
 
     //if ctrnonce%256==0: partial_precompute
     ands r4, r4, #0xff
@@ -1302,4 +1304,3 @@ exit:
     add sp, #32
     pop {r4-r11,r14}
     bx lr
-
